@@ -22,11 +22,6 @@ st.write("Media de ventas:", round(ventas_data['Ventas'].mean(), 2))
 st.write("Mediana de ventas:", round(ventas_data['Ventas'].median(), 2))
 st.write("Desviación estándar de ventas:", round(ventas_data['Ventas'].std(), 2))
 
-# Agregar un histograma para mostrar la distribución de ventas
-st.subheader("Histograma de ventas")
-plt.hist(ventas_data['Ventas'], bins=20)
-st.pyplot()
-
 # Agregar un gráfico de dispersión para analizar la relación entre dos variables
 st.subheader("Gráfico de dispersión")
 x_values = np.random.randn(n)
