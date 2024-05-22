@@ -61,5 +61,8 @@ if uploaded_file:
             ax.plot(['Entrada', 'Salida'], [df_filtrado['Entrada'].iloc[0], df_filtrado['Salida'].iloc[0]], marker='o')
             ax.set_title(f'Horario de {agente_seleccionado} en el día {dia_seleccionado}')
             ax.set_xlabel('Tipo')
-            ax.set_ylabel('Hor
-
+            ax.set_ylabel('Hora')
+            ax.set_ylim([pd.Timestamp('00:00').time(), pd.Timestamp('23:59').time()])
+            st.pyplot(fig)
+        else:
+            st.write("No hay datos para el agente y día seleccionados o el agente tiene descanso/vacaciones.")
