@@ -1,14 +1,8 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import unicodedata
 
 st.title('Reporte de Conectividad de Agentes')
-
-# Función para eliminar tildes
-def remove_accents(input_str):
-    nfkd_form = unicodedata.normalize('NFKD', input_str)
-    return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 # Cargar horarios desde un archivo de Excel
 uploaded_file_horarios = st.file_uploader("Carga los horarios desde un archivo Excel", type=["xlsx"])
@@ -26,30 +20,6 @@ if uploaded_file_horarios:
         # Transponer el DataFrame para facilitar la manipulación
         horarios_df = horarios_df.set_index('Agente').T
         
-        # Normalizar los datos
-        def parse_time_range(time_range):
-            if isinstance(time_range, str) and '-' in time_range:
-                entrada, salida = time_range.split(' - ')
-                return pd.to_datetime(entrada, format='%H:%M').time(), pd.to_datetime(salida, format='%H:%M').time()
-            return None, None
-
-        # Convertir los horarios a formato datetime.time
-        horario_data = []
-        for day in horarios_df.columns:
-            for agent in horarios_df.index:
-                entrada, salida = parse_time_range(horarios_df.at[agent, day])
-                horario_data.append({
-                    'Día': day,
-                    'Agente': remove_accents(agent),
-                    'Entrada': entrada,
-                    'Salida': salida
-                })
-        
-        horarios_df = pd.DataFrame(horario_data)
-        
-        # Intercambiar nombres de columnas
-        horarios_df = horarios_df.rename(columns={'Día': 'Agente', 'Agente': 'Día'})
-
         # Cargar registros de conectividad desde otro archivo Excel
         uploaded_file_registros = st.file_uploader("Carga los registros de conectividad desde un archivo Excel", type=["xlsx"])
         if uploaded_file_registros:
@@ -66,11 +36,8 @@ if uploaded_file_horarios:
                 st.write("Registros de conectividad cargados:")
                 st.dataframe(registros_df)
 
-                # Filtrar registros por canal 'Chat' y eliminar las filas con 'SUM' en la columna 'Estado'
-                registros_df = registros_df[(registros_df['Canal'] == 'Chat') & (~registros_df['Estado'].str.contains('SUM'))]
-
-                # Eliminar tildes de los nombres de los agentes
-                registros_df['Nombre del agente'] = registros_df['Nombre del agente'].apply(remove_accents)
+                # Filtrar registros por canal 'Chat'
+                registros_df = registros_df[registros_df['Canal'] == 'Chat']
 
                 # Comparar registros con horarios para determinar cumplimiento
                 cumplimiento_data = []
@@ -83,10 +50,8 @@ if uploaded_file_horarios:
                     if pd.isnull(entrada) or pd.isnull(salida):
                         continue  # Saltar si el agente tiene OFF o VAC
                     
-                    # Convertir dia a cadena con el formato 'YYYY-MM-DD' antes de dividirlo
-                    dia_str = dia.strftime('%Y-%m-%d')
-                    registros_agente = registros_df[(registros_df['Nombre del agente'] == agente) & 
-                                                    (registros_df['Hora de inicio del estado - Fecha'].str.contains(dia_str.split('-')[0]))]
+                    # Filtrar registros del agente en el día específico
+                    registros_agente = registros_df[registros_df['Nombre del agente'] == agente]
 
                     if registros_agente.empty:
                         cumplimiento_data.append({
