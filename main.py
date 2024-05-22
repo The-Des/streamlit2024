@@ -51,19 +51,26 @@ if uploaded_file:
         agente_seleccionado = st.selectbox("Selecciona un agente", agentes)
         
         # Convertir los días al formato adecuado (extraer solo la fecha)
-        dias = pd.to_datetime(horarios_df['Día'].unique()).strftime('%d-%b')
+        try:
+            dias = pd.to_datetime(horarios_df['Día'].unique(), errors='coerce').strftime('%d-%b')
+            dias = dias[dias.notnull()]
+        except Exception as e:
+            st.error(f"Error al procesar las fechas: {e}")
+            dias = []
+
         dia_seleccionado = st.selectbox("Selecciona un día", dias)
         
         # Filtrar los datos según selección
-        df_filtrado = horarios_df[(horarios_df['Agente'] == agente_seleccionado) & (pd.to_datetime(horarios_df['Día']).dt.strftime('%d-%b') == dia_seleccionado)]
-        
-        if not df_filtrado.empty and df_filtrado['Entrada'].iloc[0] is not None:
-            fig, ax = plt.subplots()
-            ax.plot(['Entrada', 'Salida'], [df_filtrado['Entrada'].iloc[0], df_filtrado['Salida'].iloc[0]], marker='o')
-            ax.set_title(f'Horario de {agente_seleccionado} en el día {dia_seleccionado}')
-            ax.set_xlabel('Tipo')
-            ax.set_ylabel('Hora')
-            ax.set_ylim([pd.Timestamp('00:00').time(), pd.Timestamp('23:59').time()])
-            st.pyplot(fig)
-        else:
-            st.write("No hay datos para el agente y día seleccionados o el agente tiene descanso/vacaciones.")
+        if dia_seleccionado:
+            df_filtrado = horarios_df[(horarios_df['Agente'] == agente_seleccionado) & (pd.to_datetime(horarios_df['Día'], errors='coerce').dt.strftime('%d-%b') == dia_seleccionado)]
+            
+            if not df_filtrado.empty and df_filtrado['Entrada'].iloc[0] is not None:
+                fig, ax = plt.subplots()
+                ax.plot(['Entrada', 'Salida'], [df_filtrado['Entrada'].iloc[0], df_filtrado['Salida'].iloc[0]], marker='o')
+                ax.set_title(f'Horario de {agente_seleccionado} en el día {dia_seleccionado}')
+                ax.set_xlabel('Tipo')
+                ax.set_ylabel('Hora')
+                ax.set_ylim([pd.Timestamp('00:00').time(), pd.Timestamp('23:59').time()])
+                st.pyplot(fig)
+            else:
+                st.write("No hay datos para el agente y día seleccionados o el agente tiene descanso/vacaciones.")
