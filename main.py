@@ -1,24 +1,30 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import unicodedata
 
 st.title('Reporte de Conectividad de Agentes')
 
+# Función para eliminar tildes
+def remove_accents(input_str):
+    nfkd_form = unicodedata.normalize('NFKD', input_str)
+    return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
+
 # Cargar horarios desde un archivo de Excel
-uploaded_file = st.file_uploader("Carga los horarios desde un archivo Excel", type=["xlsx"])
-if uploaded_file:
+uploaded_file_horarios = st.file_uploader("Carga los horarios desde un archivo Excel", type=["xlsx"])
+if uploaded_file_horarios:
     # Leer el archivo de Excel
-    df = pd.read_excel(uploaded_file, sheet_name=0)
+    horarios_df = pd.read_excel(uploaded_file_horarios, sheet_name=0)
     
     # Verificar si la columna 'Agente' existe
-    if 'Agente' not in df.columns:
+    if 'Agente' not in horarios_df.columns:
         st.error("El archivo no contiene la columna 'Agente'. Por favor, verifica el archivo e intenta de nuevo.")
     else:
         st.write("Horarios cargados:")
-        st.dataframe(df)
+        st.dataframe(horarios_df)
         
         # Transponer el DataFrame para facilitar la manipulación
-        df = df.set_index('Agente').T
+        horarios_df = horarios_df.set_index('Agente').T
         
         # Normalizar los datos
         def parse_time_range(time_range):
@@ -29,12 +35,12 @@ if uploaded_file:
 
         # Convertir los horarios a formato datetime.time
         horario_data = []
-        for day in df.columns:
-            for agent in df.index:
-                entrada, salida = parse_time_range(df.at[agent, day])
+        for day in horarios_df.columns:
+            for agent in horarios_df.index:
+                entrada, salida = parse_time_range(horarios_df.at[agent, day])
                 horario_data.append({
                     'Día': day,
-                    'Agente': agent,
+                    'Agente': remove_accents(agent),
                     'Entrada': entrada,
                     'Salida': salida
                 })
@@ -43,38 +49,81 @@ if uploaded_file:
         
         # Intercambiar nombres de columnas
         horarios_df = horarios_df.rename(columns={'Día': 'Agente', 'Agente': 'Día'})
-        
-        st.write("Horarios procesados:")
-        st.dataframe(horarios_df)
 
-        # Generar gráficos de cumplimiento de horarios
-        st.write("Gráficos de cumplimiento de horarios")
-        
-        # Seleccionar agente y día para visualizar cumplimiento
-        agentes = horarios_df['Agente'].unique()
-        agente_seleccionado = st.selectbox("Selecciona un agente", options=agentes)
-        
-        # Convertir los días al formato adecuado (extraer solo la fecha)
-        try:
-            dias = pd.to_datetime(horarios_df['Día'].unique(), errors='coerce').strftime('%d-%b')
-            dias = dias[~pd.isnull(dias)]
-        except Exception as e:
-            st.error(f"Error al procesar las fechas: {e}")
-            dias = []
+        # Cargar registros de conectividad desde otro archivo Excel
+        uploaded_file_registros = st.file_uploader("Carga los registros de conectividad desde un archivo Excel", type=["xlsx"])
+        if uploaded_file_registros:
+            # Leer el archivo de Excel
+            registros_df = pd.read_excel(uploaded_file_registros, sheet_name=0)
 
-        dia_seleccionado = st.selectbox("Selecciona un día", options=dias)
-        
-        # Filtrar los datos según selección
-        if dia_seleccionado:
-            df_filtrado = horarios_df[(horarios_df['Agente'] == agente_seleccionado) & (pd.to_datetime(horarios_df['Día'], errors='coerce').dt.strftime('%d-%b') == dia_seleccionado)]
-            
-            if not df_filtrado.empty and df_filtrado['Entrada'].iloc[0] is not None:
-                fig, ax = plt.subplots()
-                ax.plot(['Entrada', 'Salida'], [df_filtrado['Entrada'].iloc[0], df_filtrado['Salida'].iloc[0]], marker='o')
-                ax.set_title(f'Horario de {agente_seleccionado} en el día {dia_seleccionado}')
-                ax.set_xlabel('Tipo')
-                ax.set_ylabel('Hora')
-                ax.set_ylim([pd.Timestamp('00:00').time(), pd.Timestamp('23:59').time()])
-                st.pyplot(fig)
+            # Verificar si las columnas necesarias existen
+            required_columns = ['Hora de inicio del estado - Fecha', 'Nombre del agente', 'Canal', 'Estado', 
+                                'Hora de inicio del estado - Marca de tiempo', 'Hora de finalización del estado - Marca de tiempo', 
+                                'Tiempo del agente en el estado/segundos']
+            if not all(col in registros_df.columns for col in required_columns):
+                st.error("El archivo no contiene las columnas necesarias. Por favor, verifica el archivo e intenta de nuevo.")
             else:
-                st.write("No hay datos para el agente y día seleccionados o el agente tiene descanso/vacaciones.")
+                st.write("Registros de conectividad cargados:")
+                st.dataframe(registros_df)
+
+                # Filtrar registros por canal 'Chat' y estado 'Online'
+                registros_df = registros_df[(registros_df['Canal'] == 'Chat') & (registros_df['Estado'] == 'Online')]
+
+                # Eliminar tildes de los nombres de los agentes
+                registros_df['Nombre del agente'] = registros_df['Nombre del agente'].apply(remove_accents)
+
+                # Comparar registros con horarios para determinar cumplimiento
+                cumplimiento_data = []
+                for _, row in horarios_df.iterrows():
+                    dia = row['Día']
+                    agente = row['Agente']
+                    entrada = row['Entrada']
+                    salida = row['Salida']
+                    
+                    if pd.isnull(entrada) or pd.isnull(salida):
+                        continue  # Saltar si el agente tiene OFF o VAC
+                # Filtrar registros del agente en el día específico
+                registros_agente = registros_df[(registros_df['Nombre del agente'] == agente) & 
+                                                (registros_df['Hora de inicio del estado - Fecha'].str.contains(dia.split('-')[0]))]
+
+                if registros_agente.empty:
+                    cumplimiento_data.append({
+                        'Día': dia,
+                        'Agente': agente,
+                        'Llegada tarde': 'Sí',
+                        'Salida temprano': 'Sí',
+                        'Cumple tiempo': 'No',
+                        'Tiempo total (segundos)': 0
+                    })
+                    continue
+                
+                # Obtener el primer y último registro de estado 'Online'
+                primera_entrada = pd.to_datetime(registros_agente['Hora de inicio del estado - Marca de tiempo'].iloc[0], format='%H:%M:%S').time()
+                ultima_salida = pd.to_datetime(registros_agente['Hora de finalización del estado - Marca de tiempo'].iloc[-1], format='%H:%M:%S').time()
+
+                # Calcular tiempo total en estado 'Online'
+                tiempo_total_online = registros_agente['Tiempo del agente en el estado/segundos'].sum()
+
+                llegada_tarde = primera_entrada > entrada
+                salida_temprana = ultima_salida < salida
+                cumple_tiempo = tiempo_total_online >= (7 * 3600 + 55 * 60)  # 7 horas y 55 minutos en segundos
+
+                cumplimiento_data.append({
+                    'Día': dia,
+                    'Agente': agente,
+                    'Llegada tarde': 'Sí' if llegada_tarde else 'No',
+                    'Salida temprano': 'Sí' if salida_temprana else 'No',
+                    'Cumple tiempo': 'Sí' if cumple_tiempo else 'No',
+                    'Tiempo total (segundos)': tiempo_total_online
+                })
+
+            cumplimiento_df = pd.DataFrame(cumplimiento_data)
+            st.write("Reporte de Cumplimiento:")
+            st.dataframe(cumplimiento_df)
+
+            # Guardar el reporte en un archivo Excel
+            output = st.file_uploader("Guardar el reporte en un archivo Excel", type="xlsx")
+            if output:
+                cumplimiento_df.to_excel(output, index=False)
+                st.success("Reporte guardado correctamente.")
+
