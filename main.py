@@ -48,17 +48,17 @@ if uploaded_file:
         
         # Seleccionar agente y día para visualizar cumplimiento
         agentes = horarios_df['Agente'].unique()
-        agente_seleccionado = st.selectbox("Selecciona un agente", agentes)
+        agente_seleccionado = st.selectbox("Selecciona un agente", options=agentes)
         
         # Convertir los días al formato adecuado (extraer solo la fecha)
         try:
             dias = pd.to_datetime(horarios_df['Día'].unique(), errors='coerce').strftime('%d-%b')
-            dias = dias[dias.notnull()]
+            dias = dias[~pd.isnull(dias)]
         except Exception as e:
             st.error(f"Error al procesar las fechas: {e}")
             dias = []
 
-        dia_seleccionado = st.selectbox("Selecciona un día", dias)
+        dia_seleccionado = st.selectbox("Selecciona un día", options=dias)
         
         # Filtrar los datos según selección
         if dia_seleccionado:
