@@ -88,7 +88,8 @@ if uploaded_file_horarios:
                     
                     if pd.isnull(entrada) or pd.isnull(salida):
                         continue  # Ahora el 'continue' está dentro del bucle 'for'
-                    print("Valor de dia:", dia)
+                    st.write("Valor de dia:", dia)
+
 
                     # Filtrar registros del agente en el día específico
                     registros_agente = registros_df[(registros_df['Nombre del agente'] == agente) & 
