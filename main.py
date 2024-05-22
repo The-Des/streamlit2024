@@ -10,7 +10,7 @@ if uploaded_file:
     # Leer el archivo de Excel
     df = pd.read_excel(uploaded_file, sheet_name=0)
     
-    # Asegurarse de que la columna 'Agente' existe
+    # Verificar si la columna 'Agente' existe
     if 'Agente' not in df.columns:
         st.error("El archivo no contiene la columna 'Agente'. Por favor, verifica el archivo e intenta de nuevo.")
     else:
