@@ -7,11 +7,8 @@ st.title('Reporte de Conectividad de Agentes')
 
 # Función para eliminar tildes
 def remove_accents(input_str):
-    try:
-        nfkd_form = unicodedata.normalize('NFKD', input_str)
-        return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
-    except TypeError:
-        return input_str
+    nfkd_form = unicodedata.normalize('NFKD', input_str)
+    return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 # Cargar horarios desde un archivo de Excel
 uploaded_file_horarios = st.file_uploader("Carga los horarios desde un archivo Excel", type=["xlsx"])
@@ -69,15 +66,12 @@ if uploaded_file_horarios:
                 st.write("Registros de conectividad cargados:")
                 st.dataframe(registros_df)
 
-                # Filtrar registros por canal 'Chat' y estado 'Online'
-                registros_df = registros_df[(registros_df['Canal'] == 'Chat') & (registros_df['Estado'] == 'Online')]
+                # Filtrar registros por canal 'Chat' y eliminar las filas con 'SUM' en la columna 'Estado'
+                registros_df = registros_df[(registros_df['Canal'] == 'Chat') & (~registros_df['Estado'].str.contains('SUM'))]
 
                 # Eliminar tildes de los nombres de los agentes
                 registros_df['Nombre del agente'] = registros_df['Nombre del agente'].apply(remove_accents)
 
-                # Filtrar registros por canal 'Chat' y eliminar las filas con 'SUM' en la columna 'Estado'
-                registros_df = registros_df[(registros_df['Canal'] == 'Chat') & (~registros_df['Estado'].str.contains('SUM'))]
- 
                 # Comparar registros con horarios para determinar cumplimiento
                 cumplimiento_data = []
                 for _, row in horarios_df.iterrows():
@@ -87,13 +81,12 @@ if uploaded_file_horarios:
                     salida = row['Salida']
                     
                     if pd.isnull(entrada) or pd.isnull(salida):
-                        continue  # Ahora el 'continue' está dentro del bucle 'for'
-                    st.write("Valor de dia:", dia)
-
-
-                    # Filtrar registros del agente en el día específico
+                        continue  # Saltar si el agente tiene OFF o VAC
+                    
+                    # Convertir dia a cadena con el formato 'YYYY-MM-DD' antes de dividirlo
+                    dia_str = dia.strftime('%Y-%m-%d')
                     registros_agente = registros_df[(registros_df['Nombre del agente'] == agente) & 
-                                                    (registros_df['Hora de inicio del estado - Fecha'].str.contains(dia.split('-')[0]))]
+                                                    (registros_df['Hora de inicio del estado - Fecha'].str.contains(dia_str.split('-')[0]))]
 
                     if registros_agente.empty:
                         cumplimiento_data.append({
