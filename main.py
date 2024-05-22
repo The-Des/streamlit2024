@@ -33,13 +33,17 @@ if uploaded_file:
             for agent in df.index:
                 entrada, salida = parse_time_range(df.at[agent, day])
                 horario_data.append({
-                    'Agente': agent,
                     'Día': day,
+                    'Agente': agent,
                     'Entrada': entrada,
                     'Salida': salida
                 })
         
         horarios_df = pd.DataFrame(horario_data)
+        
+        # Intercambiar nombres de columnas
+        horarios_df = horarios_df.rename(columns={'Día': 'Agente', 'Agente': 'Día'})
+        
         st.write("Horarios procesados:")
         st.dataframe(horarios_df)
 
