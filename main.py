@@ -19,7 +19,7 @@ if uploaded_file:
         
         # Transponer el DataFrame para facilitar la manipulación
         df = df.set_index('Agente').T
-
+        
         # Normalizar los datos
         def parse_time_range(time_range):
             if isinstance(time_range, str) and '-' in time_range:
@@ -50,11 +50,12 @@ if uploaded_file:
         agentes = horarios_df['Agente'].unique()
         agente_seleccionado = st.selectbox("Selecciona un agente", agentes)
         
-        dias = horarios_df['Día'].unique()
+        # Convertir los días al formato adecuado (extraer solo la fecha)
+        dias = pd.to_datetime(horarios_df['Día'].unique()).strftime('%d-%b')
         dia_seleccionado = st.selectbox("Selecciona un día", dias)
         
         # Filtrar los datos según selección
-        df_filtrado = horarios_df[(horarios_df['Agente'] == agente_seleccionado) & (horarios_df['Día'] == dia_seleccionado)]
+        df_filtrado = horarios_df[(horarios_df['Agente'] == agente_seleccionado) & (pd.to_datetime(horarios_df['Día']).dt.strftime('%d-%b') == dia_seleccionado)]
         
         if not df_filtrado.empty and df_filtrado['Entrada'].iloc[0] is not None:
             fig, ax = plt.subplots()
