@@ -34,7 +34,7 @@ if uploaded_file_horarios:
                 entrada, salida = parse_time_range(horarios_df.at[agent, day])
                 horario_data.append({
                     'Día': day,
-                    'Agente': remove_accents(agent),
+                    'Agente': agent,
                     'Entrada': entrada,
                     'Salida': salida
                 })
