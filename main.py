@@ -1,29 +1,49 @@
-import streamlit as st 
-import pandas as pd 
-import numpy as np
+import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
 
-# Título y descripción
-st.title('UPC Data Science 2024')
-st.header('Simulador Ventas')
+st.title('Reporte de Conectividad de Agentes')
 
-# Control deslizante para la cantidad de ventas
-n = st.slider("Cantidad de ventas", 5,100, step=1)
+# Cargar horarios desde un archivo de Excel
+uploaded_file = st.file_uploader("Carga los horarios desde un archivo Excel", type=["xlsx"])
+if uploaded_file:
+    df = pd.read_excel(uploaded_file)
+    st.write("Horarios cargados:")
+    st.dataframe(df)
 
-# Generar datos aleatorios para las ventas
-ventas_data = pd.DataFrame(np.random.randn(n), columns=['Ventas'])
+    # Crear un DataFrame pivote para facilitar la visualización y análisis
+    df['Día'] = df['Día'].astype(str)
+    pivot_df = df.pivot(index='Día', columns='Agente', values=['Entrada', 'Salida'])
+    
+    # Visualizar el DataFrame pivote
+    st.write("Horarios por agente y día:")
+    st.dataframe(pivot_df)
 
-# Visualización de las ventas en una gráfica de línea
-st.subheader("Gráfico de ventas")
-st.line_chart(ventas_data)
+    # Convertir horarios a formato datetime para análisis
+    df['Entrada'] = pd.to_datetime(df['Entrada'], format='%H:%M').dt.time
+    df['Salida'] = pd.to_datetime(df['Salida'], format='%H:%M').dt.time
 
-# Estadísticas básicas sobre las ventas
-st.subheader("Estadísticas de ventas")
-st.write("Media de ventas:", round(ventas_data['Ventas'].mean(), 2))
-st.write("Mediana de ventas:", round(ventas_data['Ventas'].median(), 2))
-st.write("Desviación estándar de ventas:", round(ventas_data['Ventas'].std(), 2))
-
-# Agregar un gráfico de dispersión para analizar la relación entre dos variables
-st.subheader("Gráfico de dispersión")
-x_values = np.random.randn(n)
-y_values = np.random.randn(n)
-st.scatter_chart(pd.DataFrame({'x': x_values, 'y': y_values}))
+    # Generar gráficos de cumplimiento de horarios
+    st.write("Gráficos de cumplimiento de horarios")
+    
+    # Seleccionar agente y día para visualizar cumplimiento
+    agentes = df['Agente'].unique()
+    agente_seleccionado = st.selectbox("Selecciona un agente", agentes)
+    
+    dias = df['Día'].unique()
+    dia_seleccionado = st.selectbox("Selecciona un día", dias)
+    
+    # Filtrar los datos según selección
+    df_filtrado = df[(df['Agente'] == agente_seleccionado) & (df['Día'] == dia_seleccionado)]
+    
+    if not df_filtrado.empty:
+        fig, ax = plt.subplots()
+        ax.plot(df_filtrado['Entrada'], label='Entrada')
+        ax.plot(df_filtrado['Salida'], label='Salida')
+        ax.set_title(f'Horario de {agente_seleccionado} en el día {dia_seleccionado}')
+        ax.set_xlabel('Tiempo')
+        ax.set_ylabel('Hora')
+        ax.legend()
+        st.pyplot(fig)
+    else:
+        st.write("No hay datos para el agente y día seleccionados.")
