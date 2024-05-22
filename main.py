@@ -19,6 +19,31 @@ if uploaded_file_horarios:
         
         # Transponer el DataFrame para facilitar la manipulación
         horarios_df = horarios_df.set_index('Agente').T
+
+        # Normalizar los datos
+        def parse_time_range(time_range):
+            if isinstance(time_range, str) and '-' in time_range:
+                entrada, salida = time_range.split(' - ')
+                return pd.to_datetime(entrada, format='%H:%M').time(), pd.to_datetime(salida, format='%H:%M').time()
+            return None, None
+
+        # Convertir los horarios a formato datetime.time
+        horario_data = []
+        for day in horarios_df.columns:
+            for agent in horarios_df.index:
+                entrada, salida = parse_time_range(horarios_df.at[agent, day])
+                horario_data.append({
+                    'Día': day,
+                    'Agente': remove_accents(agent),
+                    'Entrada': entrada,
+                    'Salida': salida
+                })
+        
+        horarios_df = pd.DataFrame(horario_data)
+        
+        # Intercambiar nombres de columnas
+        horarios_df = horarios_df.rename(columns={'Día': 'Agente', 'Agente': 'Día'})
+
         
         # Cargar registros de conectividad desde otro archivo Excel
         uploaded_file_registros = st.file_uploader("Carga los registros de conectividad desde un archivo Excel", type=["xlsx"])
