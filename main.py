@@ -7,8 +7,11 @@ st.title('Reporte de Conectividad de Agentes')
 
 # Función para eliminar tildes
 def remove_accents(input_str):
-    nfkd_form = unicodedata.normalize('NFKD', input_str)
-    return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
+    try:
+        nfkd_form = unicodedata.normalize('NFKD', input_str)
+        return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
+    except TypeError:
+        return input_str
 
 # Cargar horarios desde un archivo de Excel
 uploaded_file_horarios = st.file_uploader("Carga los horarios desde un archivo Excel", type=["xlsx"])
