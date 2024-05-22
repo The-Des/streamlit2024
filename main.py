@@ -75,6 +75,9 @@ if uploaded_file_horarios:
                 # Eliminar tildes de los nombres de los agentes
                 registros_df['Nombre del agente'] = registros_df['Nombre del agente'].apply(remove_accents)
 
+                # Filtrar registros por canal 'Chat' y eliminar las filas con 'SUM' en la columna 'Estado'
+                registros_df = registros_df[(registros_df['Canal'] == 'Chat') & (~registros_df['Estado'].str.contains('SUM'))]
+ 
                 # Comparar registros con horarios para determinar cumplimiento
                 cumplimiento_data = []
                 for _, row in horarios_df.iterrows():
