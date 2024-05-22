@@ -90,7 +90,7 @@ if uploaded_file_horarios:
                 
                     # Obtener el primer y último registro de estado 'Online'
                     primera_entrada = pd.to_datetime(registros_agente['Hora de inicio del estado - Marca de tiempo'].iloc[0], format='%H:%M:%S').time()
-                    ultima_salida = pd.to_datetime(registros_agente['Hora de finalización del estado - Marca de tiempo'].iloc[-1], format='%H:%M:%S').time()
+                    ultima_salida = pd.to_datetime(registros_agente['Hora de finalización del estado - Marca de tiempo'].iloc[-1], format='%H:%M').time()
 
                     # Calcular tiempo total en estado 'Online'
                     tiempo_total_online = registros_agente['Tiempo del agente en el estado/segundos'].sum()
