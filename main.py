@@ -7,43 +7,57 @@ st.title('Reporte de Conectividad de Agentes')
 # Cargar horarios desde un archivo de Excel
 uploaded_file = st.file_uploader("Carga los horarios desde un archivo Excel", type=["xlsx"])
 if uploaded_file:
-    df = pd.read_excel(uploaded_file)
+    # Leer el archivo de Excel
+    df = pd.read_excel(uploaded_file, sheet_name=0)
     st.write("Horarios cargados:")
     st.dataframe(df)
-
-    # Crear un DataFrame pivote para facilitar la visualización y análisis
-    df['Día'] = df['Día'].astype(str)
-    pivot_df = df.pivot(index='Día', columns='Agente', values=['Entrada', 'Salida'])
     
-    # Visualizar el DataFrame pivote
-    st.write("Horarios por agente y día:")
-    st.dataframe(pivot_df)
+    # Transponer el DataFrame para facilitar la manipulación
+    df = df.set_index('Agente').T
+    
+    # Normalizar los datos
+    def parse_time_range(time_range):
+        if isinstance(time_range, str) and '-' in time_range:
+            entrada, salida = time_range.split(' - ')
+            return pd.to_datetime(entrada, format='%H:%M').time(), pd.to_datetime(salida, format='%H:%M').time()
+        return None, None
 
-    # Convertir horarios a formato datetime para análisis
-    df['Entrada'] = pd.to_datetime(df['Entrada'], format='%H:%M').dt.time
-    df['Salida'] = pd.to_datetime(df['Salida'], format='%H:%M').dt.time
+    # Convertir los horarios a formato datetime.time
+    horario_data = []
+    for day in df.columns:
+        for agent in df.index:
+            entrada, salida = parse_time_range(df.at[agent, day])
+            horario_data.append({
+                'Agente': agent,
+                'Día': day,
+                'Entrada': entrada,
+                'Salida': salida
+            })
+    
+    horarios_df = pd.DataFrame(horario_data)
+    st.write("Horarios procesados:")
+    st.dataframe(horarios_df)
 
     # Generar gráficos de cumplimiento de horarios
     st.write("Gráficos de cumplimiento de horarios")
     
     # Seleccionar agente y día para visualizar cumplimiento
-    agentes = df['Agente'].unique()
+    agentes = horarios_df['Agente'].unique()
     agente_seleccionado = st.selectbox("Selecciona un agente", agentes)
     
-    dias = df['Día'].unique()
+    dias = horarios_df['Día'].unique()
     dia_seleccionado = st.selectbox("Selecciona un día", dias)
     
     # Filtrar los datos según selección
-    df_filtrado = df[(df['Agente'] == agente_seleccionado) & (df['Día'] == dia_seleccionado)]
+    df_filtrado = horarios_df[(horarios_df['Agente'] == agente_seleccionado) & (horarios_df['Día'] == dia_seleccionado)]
     
-    if not df_filtrado.empty:
+    if not df_filtrado.empty and df_filtrado['Entrada'].iloc[0] is not None:
         fig, ax = plt.subplots()
-        ax.plot(df_filtrado['Entrada'], label='Entrada')
-        ax.plot(df_filtrado['Salida'], label='Salida')
+        ax.plot(['Entrada', 'Salida'], [df_filtrado['Entrada'].iloc[0], df_filtrado['Salida'].iloc[0]], marker='o')
         ax.set_title(f'Horario de {agente_seleccionado} en el día {dia_seleccionado}')
-        ax.set_xlabel('Tiempo')
+        ax.set_xlabel('Tipo')
         ax.set_ylabel('Hora')
-        ax.legend()
+        ax.set_ylim([pd.Timestamp('00:00').time(), pd.Timestamp('23:59').time()])
         st.pyplot(fig)
     else:
-        st.write("No hay datos para el agente y día seleccionados.")
+        st.write("No hay datos para el agente y día seleccionados o el agente tiene descanso/vacaciones.")
