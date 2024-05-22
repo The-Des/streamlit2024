@@ -75,47 +75,49 @@ if uploaded_file_horarios:
                 # Comparar registros con horarios para determinar cumplimiento
                 cumplimiento_data = []
                 for _, row in horarios_df.iterrows():
-                    dia = row['Día']
-                    agente = row['Agente']
-                    entrada = row['Entrada']
-                    salida = row['Salida']
-                    
-                    if pd.isnull(entrada) or pd.isnull(salida):
-                        continue  # Saltar si el agente tiene OFF o VAC
-                # Filtrar registros del agente en el día específico
-                registros_agente = registros_df[(registros_df['Nombre del agente'] == agente) & 
-                                                (registros_df['Hora de inicio del estado - Fecha'].str.contains(dia.split('-')[0]))]
+    dia = row['Día']
+    agente = row['Agente']
+    entrada = row['Entrada']
+    salida = row['Salida']
 
-                if registros_agente.empty:
-                    cumplimiento_data.append({
-                        'Día': dia,
-                        'Agente': agente,
-                        'Llegada tarde': 'Sí',
-                        'Salida temprano': 'Sí',
-                        'Cumple tiempo': 'No',
-                        'Tiempo total (segundos)': 0
-                    })
-                    continue
-                
-                # Obtener el primer y último registro de estado 'Online'
-                primera_entrada = pd.to_datetime(registros_agente['Hora de inicio del estado - Marca de tiempo'].iloc[0], format='%H:%M:%S').time()
-                ultima_salida = pd.to_datetime(registros_agente['Hora de finalización del estado - Marca de tiempo'].iloc[-1], format='%H:%M:%S').time()
+    if pd.isnull(entrada) or pd.isnull(salida):
+        continue  # Ahora el 'continue' está dentro del bucle 'for'
 
-                # Calcular tiempo total en estado 'Online'
-                tiempo_total_online = registros_agente['Tiempo del agente en el estado/segundos'].sum()
+    # Filtrar registros del agente en el día específico
+    registros_agente = registros_df[(registros_df['Nombre del agente'] == agente) & 
+                                    (registros_df['Hora de inicio del estado - Fecha'].str.contains(dia.split('-')[0]))]
 
-                llegada_tarde = primera_entrada > entrada
-                salida_temprana = ultima_salida < salida
-                cumple_tiempo = tiempo_total_online >= (7 * 3600 + 55 * 60)  # 7 horas y 55 minutos en segundos
+    if registros_agente.empty:
+        cumplimiento_data.append({
+            'Día': dia,
+            'Agente': agente,
+            'Llegada tarde': 'Sí',
+            'Salida temprano': 'Sí',
+            'Cumple tiempo': 'No',
+            'Tiempo total (segundos)': 0
+        })
+        continue
 
-                cumplimiento_data.append({
-                    'Día': dia,
-                    'Agente': agente,
-                    'Llegada tarde': 'Sí' if llegada_tarde else 'No',
-                    'Salida temprano': 'Sí' if salida_temprana else 'No',
-                    'Cumple tiempo': 'Sí' if cumple_tiempo else 'No',
-                    'Tiempo total (segundos)': tiempo_total_online
-                })
+    # Obtener el primer y último registro de estado 'Online'
+    primera_entrada = pd.to_datetime(registros_agente['Hora de inicio del estado - Marca de tiempo'].iloc[0], format='%H:%M:%S').time()
+    ultima_salida = pd.to_datetime(registros_agente['Hora de finalización del estado - Marca de tiempo'].iloc[-1], format='%H:%M:%S').time()
+
+    # Calcular tiempo total en estado 'Online'
+    tiempo_total_online = registros_agente['Tiempo del agente en el estado/segundos'].sum()
+
+    llegada_tarde = primera_entrada > entrada
+    salida_temprana = ultima_salida < salida
+    cumple_tiempo = tiempo_total_online >= (7 * 3600 + 55 * 60)  # 7 horas y 55 minutos en segundos
+
+    cumplimiento_data.append({
+        'Día': dia,
+        'Agente': agente,
+        'Llegada tarde': 'Sí' if llegada_tarde else 'No',
+        'Salida temprano': 'Sí' if salida_temprana else 'No',
+        'Cumple tiempo': 'Sí' if cumple_tiempo else 'No',
+        'Tiempo total (segundos)': tiempo_total_online
+    })
+
 
             cumplimiento_df = pd.DataFrame(cumplimiento_data)
             st.write("Reporte de Cumplimiento:")
