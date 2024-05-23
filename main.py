@@ -23,7 +23,7 @@ if uploaded_file_horarios:
         def parse_time_range(time_range):
             if isinstance(time_range, str) and '-' in time_range:
                 entrada, salida = time_range.split(' - ')
-                return pd.to_datetime(entrada, format='%H:%M').time(), pd.to_datetime(salida, format='%H:%M').time()
+                return pd.to_datetime(entrada, format='%H:%M').time(), pd.to_datetime(salida, format='%H:%M:%S').time()
             return None, None
 
         # Convertir los horarios a formato datetime.time
@@ -90,7 +90,7 @@ if uploaded_file_horarios:
                 
                     # Obtener el primer y último registro de estado 'Online'
                     primera_entrada = pd.to_datetime(registros_agente['Hora de inicio del estado - Marca de tiempo'].iloc[0], format='%H:%M:%S').time()
-                    ultima_salida = pd.to_datetime(registros_agente['Hora de finalización del estado - Marca de tiempo'].iloc[-1], format='%H:%M').time()
+                    ultima_salida = pd.to_datetime(registros_agente['Hora de finalización del estado - Marca de tiempo'].iloc[-1], format='%H:%M:%S').time()
 
 
                     # Calcular tiempo total en estado 'Online'
