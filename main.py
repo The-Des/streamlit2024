@@ -77,9 +77,9 @@ if uploaded_file_horarios:
                             'Día': dia,
                             'Agente': agente,
                             'Llegada tarde': 'Sí',
-                            'Tiempo tarde': None,
+                            'Tiempo tarde (segundos)': None,
                             'Salida temprano': 'Sí',
-                            'Tiempo temprano': None,
+                            'Tiempo temprano (segundos)': None,
                             'Cumple tiempo': 'No',
                             'Tiempo total (segundos)': 0
                         })
@@ -87,8 +87,8 @@ if uploaded_file_horarios:
 
                     # Manejo de errores de conversión para depurar problemas
                     try:
-                        primera_entrada = pd.to_datetime(registros_agente['Hora de inicio del estado - Marca de tiempo'].iloc[0], format='%H:%M:%S').time()
-                        ultima_salida = pd.to_datetime(registros_agente['Hora de finalización del estado - Marca de tiempo'].iloc[-1], format='%H:%M:%S').time()
+                        primera_entrada = pd.to_datetime(registros_agente[registros_agente['Estado'] == 'Online']['Hora de inicio del estado - Marca de tiempo'].iloc[0], format='%H:%M:%S').time()
+                        ultima_salida = pd.to_datetime(registros_agente[registros_agente['Estado'] == 'Online']['Hora de finalización del estado - Marca de tiempo'].iloc[-1], format='%H:%M:%S').time()
                     except Exception as e:
                         st.error(f"Error de conversión de tiempo para el agente {agente} en el día {dia}: {e}")
                         continue
@@ -103,21 +103,21 @@ if uploaded_file_horarios:
                     # Calcular tiempo de llegada tarde y salida temprana
                     tiempo_tarde = None
                     if llegada_tarde:
-                        tiempo_tarde = (pd.datetime.combine(pd.Timestamp.min, primera_entrada) - 
-                                        pd.datetime.combine(pd.Timestamp.min, entrada)).seconds
+                        tiempo_tarde = (pd.Timestamp.combine(pd.Timestamp.today(), primera_entrada) - 
+                                        pd.Timestamp.combine(pd.Timestamp.today(), entrada)).seconds
 
                     tiempo_temprano = None
                     if salida_temprana:
-                        tiempo_temprano = (pd.datetime.combine(pd.Timestamp.min, salida) - 
-                                           pd.datetime.combine(pd.Timestamp.min, ultima_salida)).seconds
+                        tiempo_temprano = (pd.Timestamp.combine(pd.Timestamp.today(), salida) - 
+                                           pd.Timestamp.combine(pd.Timestamp.today(), ultima_salida)).seconds
 
                     cumplimiento_data.append({
                         'Día': dia,
                         'Agente': agente,
                         'Llegada tarde': 'Sí' if llegada_tarde else 'No',
-                        'Tiempo tarde': tiempo_tarde,
+                        'Tiempo tarde (segundos)': tiempo_tarde,
                         'Salida temprano': 'Sí' if salida_temprana else 'No',
-                        'Tiempo temprano': tiempo_temprano,
+                        'Tiempo temprano (segundos)': tiempo_temprano,
                         'Cumple tiempo': 'Sí' if cumple_tiempo else 'No',
                         'Tiempo total (segundos)': tiempo_total_online
                     })
