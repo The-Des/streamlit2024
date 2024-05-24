@@ -14,9 +14,6 @@ if uploaded_file_horarios:
     if 'Agente' not in horarios_df.columns:
         st.error("El archivo no contiene la columna 'Agente'. Por favor, verifica el archivo e intenta de nuevo.")
     else:
-        st.write("Horarios cargados:")
-        st.dataframe(horarios_df)
-        
         # Transponer el DataFrame para facilitar la manipulación
         horarios_df = horarios_df.set_index('Agente').T
 
@@ -57,9 +54,6 @@ if uploaded_file_horarios:
             if not all(col in registros_df.columns for col in required_columns):
                 st.error("El archivo no contiene las columnas necesarias. Por favor, verifica el archivo e intenta de nuevo.")
             else:
-                st.write("Registros de conectividad cargados:")
-                st.dataframe(registros_df)
-
                 # Filtrar registros por canal 'Chat' y eliminar filas con 'SUM' en la columna 'Estado'
                 registros_df = registros_df[(registros_df['Canal'] == 'Chat') & (registros_df['Estado'].isin(['Online', 'Away']))]
 
@@ -75,19 +69,22 @@ if uploaded_file_horarios:
                         continue  # Saltar si el agente tiene OFF o VAC
                     
                     # Filtrar registros del agente en el día específico
-                    registros_agente = registros_df[registros_df['Nombre del agente'] == agente]
+                    registros_agente = registros_df[(registros_df['Nombre del agente'] == agente) & 
+                                                    (registros_df['Hora de inicio del estado - Fecha'] == dia)]
 
                     if registros_agente.empty:
                         cumplimiento_data.append({
                             'Día': dia,
                             'Agente': agente,
                             'Llegada tarde': 'Sí',
+                            'Tiempo tarde': None,
                             'Salida temprano': 'Sí',
+                            'Tiempo temprano': None,
                             'Cumple tiempo': 'No',
                             'Tiempo total (segundos)': 0
                         })
                         continue
-                
+
                     # Manejo de errores de conversión para depurar problemas
                     try:
                         primera_entrada = pd.to_datetime(registros_agente['Hora de inicio del estado - Marca de tiempo'].iloc[0], format='%H:%M:%S').time()
@@ -103,11 +100,24 @@ if uploaded_file_horarios:
                     salida_temprana = ultima_salida < salida
                     cumple_tiempo = tiempo_total_online >= (7 * 3600 + 50 * 60)  # 7 horas y 50 minutos en segundos
 
+                    # Calcular tiempo de llegada tarde y salida temprana
+                    tiempo_tarde = None
+                    if llegada_tarde:
+                        tiempo_tarde = (pd.datetime.combine(pd.Timestamp.min, primera_entrada) - 
+                                        pd.datetime.combine(pd.Timestamp.min, entrada)).seconds
+
+                    tiempo_temprano = None
+                    if salida_temprana:
+                        tiempo_temprano = (pd.datetime.combine(pd.Timestamp.min, salida) - 
+                                           pd.datetime.combine(pd.Timestamp.min, ultima_salida)).seconds
+
                     cumplimiento_data.append({
                         'Día': dia,
                         'Agente': agente,
                         'Llegada tarde': 'Sí' if llegada_tarde else 'No',
+                        'Tiempo tarde': tiempo_tarde,
                         'Salida temprano': 'Sí' if salida_temprana else 'No',
+                        'Tiempo temprano': tiempo_temprano,
                         'Cumple tiempo': 'Sí' if cumple_tiempo else 'No',
                         'Tiempo total (segundos)': tiempo_total_online
                     })
