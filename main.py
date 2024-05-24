@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 
 st.title('Reporte de Conectividad de Agentes')
 
@@ -43,7 +44,6 @@ if uploaded_file_horarios:
         # Intercambiar nombres de columnas
         horarios_df = horarios_df.rename(columns={'Día': 'Agente', 'Agente': 'Día'})
 
-        
         # Cargar registros de conectividad desde otro archivo Excel
         uploaded_file_registros = st.file_uploader("Carga los registros de conectividad desde un archivo Excel", type=["xlsx"])
         if uploaded_file_registros:
@@ -60,8 +60,8 @@ if uploaded_file_horarios:
                 st.write("Registros de conectividad cargados:")
                 st.dataframe(registros_df)
 
-                # Filtrar registros por canal 'Chat'
-                registros_df = registros_df[registros_df['Canal'] == 'Chat']
+                # Filtrar registros por canal 'Chat' y eliminar filas con 'SUM' en la columna 'Estado'
+                registros_df = registros_df[(registros_df['Canal'] == 'Chat') & (registros_df['Estado'].isin(['Online', 'Away']))]
 
                 # Comparar registros con horarios para determinar cumplimiento
                 cumplimiento_data = []
@@ -88,17 +88,20 @@ if uploaded_file_horarios:
                         })
                         continue
                 
-                    # Obtener el primer y último registro de estado 'Online'
-                    primera_entrada = pd.to_datetime(registros_agente['Hora de inicio del estado - Marca de tiempo'].iloc[0], format='%H:%M').time()
-                    ultima_salida = pd.to_datetime(registros_agente['Hora de finalización del estado - Marca de tiempo'].iloc[-1], format='%H:%M').time()
+                    # Manejo de errores de conversión para depurar problemas
+                    try:
+                        primera_entrada = pd.to_datetime(registros_agente['Hora de inicio del estado - Marca de tiempo'].iloc[0], format='%H:%M:%S').time()
+                        ultima_salida = pd.to_datetime(registros_agente['Hora de finalización del estado - Marca de tiempo'].iloc[-1], format='%H:%M:%S').time()
+                    except Exception as e:
+                        st.error(f"Error de conversión de tiempo para el agente {agente} en el día {dia}: {e}")
+                        continue
 
-
-                    # Calcular tiempo total en estado 'Online'
+                    # Calcular tiempo total en estado 'Online' y 'Away'
                     tiempo_total_online = registros_agente['Tiempo del agente en el estado/segundos'].sum()
 
                     llegada_tarde = primera_entrada > entrada
                     salida_temprana = ultima_salida < salida
-                    cumple_tiempo = tiempo_total_online >= (7 * 3600 + 55 * 60)  # 7 horas y 55 minutos en segundos
+                    cumple_tiempo = tiempo_total_online >= (7 * 3600 + 50 * 60)  # 7 horas y 50 minutos en segundos
 
                     cumplimiento_data.append({
                         'Día': dia,
