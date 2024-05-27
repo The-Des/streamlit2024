@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 
 st.title('Reporte de Conectividad de Agentes')
 
@@ -16,43 +16,50 @@ uploaded_file_horarios = st.file_uploader("Carga los horarios desde un archivo E
 if uploaded_file_horarios:
     # Leer el archivo de Excel
     horarios_df = pd.read_excel(uploaded_file_horarios, sheet_name=0)
+    
+    # Transponer el DataFrame para poner los días como columnas y los agentes como filas
+    horarios_df = horarios_df.set_index('Agente').transpose()
 
-    # Verificar si la columna 'Agente' existe
-    if 'Agente' not in horarios_df.columns:
-        st.error("El archivo no contiene la columna 'Agente'. Por favor, verifica el archivo e intenta de nuevo.")
-    else:
-        # Convertir las horas de entrada y salida a datetime.time
-        horarios_df['Entrada'] = horarios_df['Entrada'].astype(str).apply(convert_to_time)
-        horarios_df['Salida'] = horarios_df['Salida'].astype(str).apply(convert_to_time)
+    # Renombrar las columnas después de la transposición
+    horarios_df.columns.name = None
+    horarios_df = horarios_df.reset_index()
+    horarios_df = horarios_df.rename(columns={'index': 'Día'})
 
-        # Cargar registros de conectividad desde otro archivo Excel
-        uploaded_file_registros = st.file_uploader("Carga los registros de conectividad desde un archivo Excel", type=["xlsx"])
-        if uploaded_file_registros:
-            # Leer el archivo de Excel
-            registros_df = pd.read_excel(uploaded_file_registros, sheet_name=0)
+    # Imprimir los nombres de las columnas para verificar
+    st.write("Columnas del archivo de horarios después de transponer:", horarios_df.columns.tolist())
 
-            # Verificar si las columnas necesarias existen
-            required_columns = ['Hora de inicio del estado - Fecha', 'Nombre del agente', 'Canal', 'Estado', 
-                                'Hora de inicio del estado - Marca de tiempo', 'Hora de finalización del estado - Marca de tiempo', 
-                                'Tiempo del agente en el estado/segundos']
-            if not all(col in registros_df.columns for col in required_columns):
-                st.error("El archivo no contiene las columnas necesarias. Por favor, verifica el archivo e intenta de nuevo.")
-            else:
-                # Filtrar registros por canal 'Chat' y eliminar filas con 'SUM' en la columna 'Estado'
-                registros_df = registros_df[(registros_df['Canal'] == 'Chat') & (registros_df['Estado'].isin(['Online', 'Away']))]
+    # Normalizar y convertir los horarios de entrada y salida a datetime.time
+    for column in horarios_df.columns[1:]:  # Saltamos la columna 'Día'
+        horarios_df[column] = horarios_df[column].astype(str).apply(lambda x: x.split('-'))
+        horarios_df[column] = horarios_df[column].apply(lambda x: [convert_to_time(y) for y in x])
 
-                # Convertir columnas de tiempo a datetime.time
-                registros_df['Hora de inicio del estado - Marca de tiempo'] = registros_df['Hora de inicio del estado - Marca de tiempo'].astype(str).apply(convert_to_time)
-                registros_df['Hora de finalización del estado - Marca de tiempo'] = registros_df['Hora de finalización del estado - Marca de tiempo'].astype(str).apply(convert_to_time)
+    # Cargar registros de conectividad desde otro archivo Excel
+    uploaded_file_registros = st.file_uploader("Carga los registros de conectividad desde un archivo Excel", type=["xlsx"])
+    if uploaded_file_registros:
+        # Leer el archivo de Excel
+        registros_df = pd.read_excel(uploaded_file_registros, sheet_name=0)
 
-                # Comparar registros con horarios para determinar cumplimiento
-                cumplimiento_data = []
-                for idx, horario_row in horarios_df.iterrows():
-                    dia = horario_row['Día']
-                    agente = horario_row['Agente']
-                    entrada = horario_row['Entrada']
-                    salida = horario_row['Salida']
-                    
+        # Verificar si las columnas necesarias existen
+        required_columns = ['Hora de inicio del estado - Fecha', 'Nombre del agente', 'Canal', 'Estado', 
+                            'Hora de inicio del estado - Marca de tiempo', 'Hora de finalización del estado - Marca de tiempo', 
+                            'Tiempo del agente en el estado/segundos']
+        if not all(col in registros_df.columns for col in required_columns):
+            st.error("El archivo no contiene las columnas necesarias. Por favor, verifica el archivo e intenta de nuevo.")
+        else:
+            # Filtrar registros por canal 'Chat' y eliminar filas con 'SUM' en la columna 'Estado'
+            registros_df = registros_df[(registros_df['Canal'] == 'Chat') & (registros_df['Estado'].isin(['Online', 'Away']))]
+
+            # Convertir columnas de tiempo a datetime.time
+            registros_df['Hora de inicio del estado - Marca de tiempo'] = registros_df['Hora de inicio del estado - Marca de tiempo'].astype(str).apply(convert_to_time)
+            registros_df['Hora de finalización del estado - Marca de tiempo'] = registros_df['Hora de finalización del estado - Marca de tiempo'].astype(str).apply(convert_to_time)
+
+            # Comparar registros con horarios para determinar cumplimiento
+            cumplimiento_data = []
+            for idx, horario_row in horarios_df.iterrows():
+                dia = horario_row['Día']
+                for agente in horarios_df.columns[1:]:  # Saltamos la columna 'Día'
+                    entrada, salida = horario_row[agente]
+
                     if entrada is None or salida is None:
                         continue  # Saltar si el agente tiene OFF o VAC
                     
@@ -81,30 +88,4 @@ if uploaded_file_horarios:
                     tiempo_total_online = registros_agente['Tiempo del agente en el estado/segundos'].sum()
 
                     # Cálculo de llegada tarde y salida temprana
-                    llegada_tarde = (datetime.combine(datetime.today(), primera_entrada) - 
-                                     datetime.combine(datetime.today(), entrada)).total_seconds() if primera_entrada and primera_entrada > entrada else 0
-                    salida_temprana = (datetime.combine(datetime.today(), salida) - 
-                                       datetime.combine(datetime.today(), ultima_salida)).total_seconds() if ultima_salida and ultima_salida < salida else 0
-                    
-                    cumple_tiempo = tiempo_total_online >= (7 * 3600 + 50 * 60)  # 7 horas y 50 minutos en segundos
-
-                    cumplimiento_data.append({
-                        'Día': dia,
-                        'Agente': agente,
-                        'Llegada tarde': 'Sí' if llegada_tarde > 0 else 'No',
-                        'Tiempo tarde (segundos)': llegada_tarde if llegada_tarde > 0 else None,
-                        'Salida temprano': 'Sí' if salida_temprana > 0 else 'No',
-                        'Tiempo temprano (segundos)': salida_temprana if salida_temprana > 0 else None,
-                        'Cumple tiempo': 'Sí' if cumple_tiempo else 'No',
-                        'Tiempo total (segundos)': tiempo_total_online
-                    })
-
-                cumplimiento_df = pd.DataFrame(cumplimiento_data)
-                st.write("Reporte de Cumplimiento:")
-                st.dataframe(cumplimiento_df)
-
-                # Guardar el reporte en un archivo Excel
-                output = st.file_uploader("Guardar el reporte en un archivo Excel", type="xlsx")
-                if output:
-                    cumplimiento_df.to_excel(output, index=False)
-                    st.success("Reporte guardado correctamente.")
+    
