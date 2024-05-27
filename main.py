@@ -7,7 +7,7 @@ st.title('Reporte de Conectividad de Agentes')
 # Función para convertir string a datetime
 def convert_to_time(time_str):
     try:
-        return datetime.strptime(time_str, '%H:%M:%S').time()
+        return datetime.datetime.strptime(time_str, '%H:%M')
     except ValueError:
         return None
 
