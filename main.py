@@ -1,29 +1,48 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, timedelta
+import numpy as np
 
 st.title('Reporte de Conectividad de Agentes')
-
-# Función para convertir string a datetime.time
-def convert_to_time(time_str):
-    try:
-        return datetime.strptime(time_str, '%H:%M:%S').time()
-    except ValueError:
-        return None
 
 # Cargar horarios desde un archivo de Excel
 uploaded_file_horarios = st.file_uploader("Carga los horarios desde un archivo Excel", type=["xlsx"])
 if uploaded_file_horarios:
     # Leer el archivo de Excel
     horarios_df = pd.read_excel(uploaded_file_horarios, sheet_name=0)
-
+    
     # Verificar si la columna 'Agente' existe
     if 'Agente' not in horarios_df.columns:
         st.error("El archivo no contiene la columna 'Agente'. Por favor, verifica el archivo e intenta de nuevo.")
     else:
-        # Convertir las horas de entrada y salida a datetime.time
-        horarios_df['Entrada'] = horarios_df['Entrada'].apply(convert_to_time)
-        horarios_df['Salida'] = horarios_df['Salida'].apply(convert_to_time)
+        # Transponer el DataFrame para facilitar la manipulación
+        horarios_df = horarios_df.set_index('Agente').T
+
+        # Normalizar los datos
+        def parse_time_range(time_range):
+            if isinstance(time_range, str) and '-' in time_range:
+                entrada, salida = time_range.split(' - ')
+                try:
+                    entrada_time = pd.to_datetime(entrada, format='%H:%M').time()
+                    salida_time = pd.to_datetime(salida, format='%H:%M').time()
+                    return entrada_time, salida_time
+                except Exception as e:
+                    st.error(f"Error al convertir los tiempos: {e}")
+                    return None, None
+            return None, None
+
+        # Convertir los horarios a formato datetime.time
+        horario_data = []
+        for agent in horarios_df.columns:
+            for day in horarios_df.index:
+                entrada, salida = parse_time_range(horarios_df.at[day, agent])
+                horario_data.append({
+                    'Día': day,
+                    'Agente': agent,
+                    'Entrada': entrada,
+                    'Salida': salida
+                })
+        
+        horarios_df = pd.DataFrame(horario_data)
 
         # Cargar registros de conectividad desde otro archivo Excel
         uploaded_file_registros = st.file_uploader("Carga los registros de conectividad desde un archivo Excel", type=["xlsx"])
@@ -41,19 +60,15 @@ if uploaded_file_horarios:
                 # Filtrar registros por canal 'Chat' y eliminar filas con 'SUM' en la columna 'Estado'
                 registros_df = registros_df[(registros_df['Canal'] == 'Chat') & (registros_df['Estado'].isin(['Online', 'Away']))]
 
-                # Convertir columnas de tiempo a datetime.time
-                registros_df['Hora de inicio del estado - Marca de tiempo'] = registros_df['Hora de inicio del estado - Marca de tiempo'].apply(convert_to_time)
-                registros_df['Hora de finalización del estado - Marca de tiempo'] = registros_df['Hora de finalización del estado - Marca de tiempo'].apply(convert_to_time)
-
                 # Comparar registros con horarios para determinar cumplimiento
                 cumplimiento_data = []
-                for idx, horario_row in horarios_df.iterrows():
-                    dia = horario_row['Día']
-                    agente = horario_row['Agente']
-                    entrada = horario_row['Entrada']
-                    salida = horario_row['Salida']
+                for _, row in horarios_df.iterrows():
+                    dia = row['Día']
+                    agente = row['Agente']
+                    entrada = row['Entrada']
+                    salida = row['Salida']
                     
-                    if entrada is None or salida is None:
+                    if pd.isnull(entrada) or pd.isnull(salida):
                         continue  # Saltar si el agente tiene OFF o VAC
                     
                     # Filtrar registros del agente en el día específico
@@ -73,18 +88,22 @@ if uploaded_file_horarios:
                         })
                         continue
 
-                    # Obtener la primera entrada y última salida
-                    primera_entrada = min(registros_agente[registros_agente['Estado'] == 'Online']['Hora de inicio del estado - Marca de tiempo'], default=None)
-                    ultima_salida = max(registros_agente[registros_agente['Estado'] == 'Online']['Hora de finalización del estado - Marca de tiempo'], default=None)
+                    # Manejo de errores de conversión para depurar problemas
+                    try:
+                        primera_entrada = pd.to_datetime(registros_agente[registros_agente['Estado'] == 'Online']['Hora de inicio del estado - Marca de tiempo'].iloc[0], format='%H:%M:%S').time()
+                        ultima_salida = pd.to_datetime(registros_agente[registros_agente['Estado'] == 'Online']['Hora de finalización del estado - Marca de tiempo'].iloc[-1], format='%H:%M:%S').time()
+                    except Exception as e:
+                        st.error(f"Error de conversión de tiempo para el agente {agente} en el día {dia}: {e}")
+                        continue
 
                     # Calcular tiempo total en estado 'Online' y 'Away'
                     tiempo_total_online = registros_agente['Tiempo del agente en el estado/segundos'].sum()
 
                     # Cálculo de llegada tarde y salida temprana
-                    llegada_tarde = (datetime.combine(datetime.today(), primera_entrada) - 
-                                     datetime.combine(datetime.today(), entrada)).total_seconds() if primera_entrada and primera_entrada > entrada else 0
-                    salida_temprana = (datetime.combine(datetime.today(), salida) - 
-                                       datetime.combine(datetime.today(), ultima_salida)).total_seconds() if ultima_salida and ultima_salida < salida else 0
+                    llegada_tarde = (pd.Timestamp.combine(pd.Timestamp.today(), primera_entrada) - 
+                                     pd.Timestamp.combine(pd.Timestamp.today(), entrada)).total_seconds() if primera_entrada > entrada else 0
+                    salida_temprana = (pd.Timestamp.combine(pd.Timestamp.today(), salida) - 
+                                       pd.Timestamp.combine(pd.Timestamp.today(), ultima_salida)).total_seconds() if ultima_salida < salida else 0
                     
                     cumple_tiempo = tiempo_total_online >= (7 * 3600 + 50 * 60)  # 7 horas y 50 minutos en segundos
 
