@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 
 st.title('Reporte de Conectividad de Agentes')
 
@@ -20,14 +21,20 @@ if uploaded_file_horarios:
         def parse_time_range(time_range):
             if isinstance(time_range, str) and '-' in time_range:
                 entrada, salida = time_range.split(' - ')
-                return pd.to_datetime(entrada, format='%H:%M').time(), pd.to_datetime(salida, format='%H:%M').time()
+                try:
+                    entrada_time = pd.to_datetime(entrada, format='%H:%M').time()
+                    salida_time = pd.to_datetime(salida, format='%H:%M').time()
+                    return entrada_time, salida_time
+                except Exception as e:
+                    st.error(f"Error al convertir los tiempos: {e}")
+                    return None, None
             return None, None
 
         # Convertir los horarios a formato datetime.time
         horario_data = []
-        for day in horarios_df.columns:
-            for agent in horarios_df.index:
-                entrada, salida = parse_time_range(horarios_df.at[agent, day])
+        for agent in horarios_df.columns:
+            for day in horarios_df.index:
+                entrada, salida = parse_time_range(horarios_df.at[day, agent])
                 horario_data.append({
                     'Día': day,
                     'Agente': agent,
@@ -36,9 +43,6 @@ if uploaded_file_horarios:
                 })
         
         horarios_df = pd.DataFrame(horario_data)
-        
-        # Intercambiar nombres de columnas
-        horarios_df = horarios_df.rename(columns={'Día': 'Agente', 'Agente': 'Día'})
 
         # Cargar registros de conectividad desde otro archivo Excel
         uploaded_file_registros = st.file_uploader("Carga los registros de conectividad desde un archivo Excel", type=["xlsx"])
