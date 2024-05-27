@@ -4,10 +4,10 @@ from datetime import datetime, timedelta
 
 st.title('Reporte de Conectividad de Agentes')
 
-# Función para convertir string a datetime
+# Función para convertir string a datetime.time
 def convert_to_time(time_str):
     try:
-        return datetime.datetime.strptime(time_str, '%H:%M')
+        return datetime.strptime(time_str, '%H:%M:%S').time()
     except ValueError:
         return None
 
@@ -22,8 +22,8 @@ if uploaded_file_horarios:
         st.error("El archivo no contiene la columna 'Agente'. Por favor, verifica el archivo e intenta de nuevo.")
     else:
         # Convertir las horas de entrada y salida a datetime.time
-        horarios_df['Entrada'] = horarios_df['Entrada'].apply(lambda x: convert_to_time(x.split(' - ')[0]))
-        horarios_df['Salida'] = horarios_df['Salida'].apply(lambda x: convert_to_time(x.split(' - ')[1]))
+        horarios_df['Entrada'] = horarios_df['Entrada'].apply(convert_to_time)
+        horarios_df['Salida'] = horarios_df['Salida'].apply(convert_to_time)
 
         # Cargar registros de conectividad desde otro archivo Excel
         uploaded_file_registros = st.file_uploader("Carga los registros de conectividad desde un archivo Excel", type=["xlsx"])
