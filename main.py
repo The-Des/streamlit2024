@@ -95,28 +95,21 @@ if uploaded_file_horarios:
                     # Calcular tiempo total en estado 'Online' y 'Away'
                     tiempo_total_online = registros_agente['Tiempo del agente en el estado/segundos'].sum()
 
-                    llegada_tarde = primera_entrada > entrada
-                    salida_temprana = ultima_salida < salida
+                    # Cálculo de llegada tarde y salida temprana
+                    llegada_tarde = (pd.Timestamp.combine(pd.Timestamp.today(), primera_entrada) - 
+                                     pd.Timestamp.combine(pd.Timestamp.today(), entrada)).total_seconds() if primera_entrada > entrada else 0
+                    salida_temprana = (pd.Timestamp.combine(pd.Timestamp.today(), salida) - 
+                                       pd.Timestamp.combine(pd.Timestamp.today(), ultima_salida)).total_seconds() if ultima_salida < salida else 0
+                    
                     cumple_tiempo = tiempo_total_online >= (7 * 3600 + 50 * 60)  # 7 horas y 50 minutos en segundos
-
-                    # Calcular tiempo de llegada tarde y salida temprana
-                    tiempo_tarde = None
-                    if llegada_tarde:
-                        tiempo_tarde = (pd.Timestamp.combine(pd.Timestamp.today(), primera_entrada) - 
-                                        pd.Timestamp.combine(pd.Timestamp.today(), entrada)).seconds
-
-                    tiempo_temprano = None
-                    if salida_temprana:
-                        tiempo_temprano = (pd.Timestamp.combine(pd.Timestamp.today(), salida) - 
-                                           pd.Timestamp.combine(pd.Timestamp.today(), ultima_salida)).seconds
 
                     cumplimiento_data.append({
                         'Día': dia,
                         'Agente': agente,
-                        'Llegada tarde': 'Sí' if llegada_tarde else 'No',
-                        'Tiempo tarde (segundos)': tiempo_tarde,
-                        'Salida temprano': 'Sí' if salida_temprana else 'No',
-                        'Tiempo temprano (segundos)': tiempo_temprano,
+                        'Llegada tarde': 'Sí' if llegada_tarde > 0 else 'No',
+                        'Tiempo tarde (segundos)': llegada_tarde if llegada_tarde > 0 else None,
+                        'Salida temprano': 'Sí' if salida_temprana > 0 else 'No',
+                        'Tiempo temprano (segundos)': salida_temprana if salida_temprana > 0 else None,
                         'Cumple tiempo': 'Sí' if cumple_tiempo else 'No',
                         'Tiempo total (segundos)': tiempo_total_online
                     })
