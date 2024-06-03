@@ -4,7 +4,7 @@ import numpy as np
 from unidecode import unidecode
 
 # Cargar el archivo Excel
-uploaded_file = st.file_uploader("Sube tu archivo Excel", type=["xlsx"])
+uploaded_file = st.file_uploader("Sube el horario", type=["xlsx"])
 
 if uploaded_file:
     # Leer el archivo Excel
@@ -28,3 +28,10 @@ if uploaded_file:
 
     # Guardar el resultado en memoria
     st.session_state['entry_times'] = entry_times
+
+    # Cargar el segundo archivo Excel
+    uploaded_file = st.file_uploader("Sube el horario de conexión", type=["xlsx"])
+
+    if uploaded_file:
+        # Leer el archivo Excel
+        df = pd.read_excel(uploaded_file)
