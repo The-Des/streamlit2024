@@ -5,19 +5,22 @@ from datetime import datetime
 st.title('Reporte de Conectividad de Agentes')
 
 # Función para convertir string a datetime.time
-def convert_to_time(time_str):
-    try:
-        return datetime.strptime(time_str, '%H:%M:%S').time()
-    except (ValueError, TypeError):
-        return None
+def extract_entry_time(schedule):
+    if schedule in ["OFF","VAC"]:
+        return np.nan
+    return pd.to_datetime(schedule.split(' - ')[0], format='%H:%M').time()
 
 # Cargar horarios desde un archivo de Excel
 uploaded_file_horarios = st.file_uploader("Carga los horarios desde un archivo Excel", type=["xlsx"])
 if uploaded_file_horarios:
     # Leer el archivo de Excel
     horarios_df = pd.read_excel(uploaded_file_horarios, sheet_name=0)
+
+entry_times = df.set_index('Agente').applymap(extract_entry_time)
+
+st.write("Información",entry_times)
     
-    # Transponer el DataFrame para poner los días como columnas y los agentes como filas
+    """# Transponer el DataFrame para poner los días como columnas y los agentes como filas
     horarios_df = horarios_df.set_index('Agente').transpose()
 
     # Renombrar las columnas después de la transposición
@@ -87,5 +90,4 @@ if uploaded_file_horarios:
                     # Calcular tiempo total en estado 'Online' y 'Away'
                     tiempo_total_online = registros_agente['Tiempo del agente en el estado/segundos'].sum()
 
-                    # Cálculo de llegada tarde y salida temprana
-    
+                    # Cálculo de llegada tarde y salida temprana"""
