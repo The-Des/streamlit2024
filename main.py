@@ -45,15 +45,16 @@ if uploaded_file:
     # Convertir la columna de fecha a datetime
     df_online['Hora de inicio del estado - Fecha'] = pd.to_datetime(df_online['Hora de inicio del estado - Fecha'], format='%d %b %y')
 
-    # Ordenar por fecha y hora de inicio del estado
-    df_online = df_online.sort_values(by=['Hora de inicio del estado - Fecha', 'Hora de inicio del estado - Marca de tiempo'])
+    # Crear una columna combinada de fecha y hora para ordenar correctamente
+    df_online['Hora de inicio del estado - Marca de tiempo'] = pd.to_datetime(df_online['Hora de inicio del estado - Marca de tiempo'], format='%H:%M:%S').dt.time
+    df_online['Inicio Completo'] = pd.to_datetime(df_online['Hora de inicio del estado - Fecha'].astype(str) + ' ' + df_online['Hora de inicio del estado - Marca de tiempo'].astype(str))
+    
+    # Ordenar por la columna 'Inicio Completo'
+    df_online = df_online.sort_values(by='Inicio Completo')
 
     # Agrupar por agente y fecha, y obtener el primer registro de cada día
     df_online['Fecha'] = df_online['Hora de inicio del estado - Fecha'].dt.date
     df_first_online = df_online.groupby(['Nombre del agente', 'Fecha']).first().reset_index()
-
-    # Eliminar la columna 'Fecha' ya que no es necesaria en el resultado final
-    df_first_online = df_first_online.drop(columns=['Fecha'])
-
+    
     # Mostrar el resultado en Streamlit
     st.write(df_first_online)
