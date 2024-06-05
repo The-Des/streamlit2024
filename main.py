@@ -61,5 +61,5 @@ if uploaded_file:
         # Mostrar el resultado en Streamlit
         st.write(df_first_online)
 
-    except Exception as e:
-        st.error(f"Ha ocurrido un error: {e}")
+    except Exception:
+        pass
