@@ -45,7 +45,7 @@ if uploaded_file:
         df_online = df[df['Estado'] == 'Online']
 
         # Eliminar tildes en la columna 'Agente'
-        df['Agente'] = df['Agente'].apply(unidecode)
+        df['Nombre del agente'] = df['Nombre del agente'].apply(unidecode)
         
         # Convertir la columna de fecha a datetime
         df_online['Hora de inicio del estado - Fecha'] = pd.to_datetime(df_online['Hora de inicio del estado - Fecha'], format='%d %b %y')
