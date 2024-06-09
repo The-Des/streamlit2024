@@ -107,5 +107,5 @@ if uploaded_file:
     # Formatear la columna de fecha para mostrar solo día/mes/año
     df_resultados['Fecha'] = df_resultados['Fecha'].dt.strftime('%d/%m/%Y')
     
-    st.write(Tabla de Tardanzas)
+    st.write("Tabla de Tardanzas")
     st.dataframe(df_resultados)
