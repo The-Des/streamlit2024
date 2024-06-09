@@ -21,10 +21,6 @@ if uploaded_file:
     
     # Aplicar la función a todas las columnas excepto la columna 'Agente'
     entry_times = df.set_index('Agente').applymap(extract_entry_time)
-        
-    # Mostrar los resultados (opcional, solo para verificación)
-    st.write("Horarios de entrada")
-    st.dataframe(entry_times)
 
     # Guardar el resultado en memoria
     st.session_state['entry_times'] = entry_times
@@ -60,9 +56,6 @@ if uploaded_file:
         # Agrupar por agente y fecha, y obtener el primer registro de cada día
         df_online['Fecha'] = df_online['Hora de inicio del estado - Fecha'].dt.date
         df_first_online = df_online.groupby(['Nombre del agente', 'Fecha']).first().reset_index()
-        
-        # Mostrar el resultado en Streamlit
-        st.write(df_first_online)
 
     except Exception:
         pass
