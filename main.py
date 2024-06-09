@@ -104,4 +104,10 @@ if uploaded_file:
     # Crear un DataFrame con los resultados
     df_resultados = pd.DataFrame(resultados, columns=['Nombre del agente', 'Fecha', 'Diferencia'])
 
+    # Eliminar las filas donde la diferencia es NaT
+    df_resultados = df_resultados.dropna(subset=['Diferencia'])
+
+    # Convertir la columna 'Diferencia' a una cadena en formato HH:MM:SS
+    df_resultados['Diferencia'] = df_resultados['Diferencia'].apply(lambda x: str(x).split(' ')[-1])
+
     st.write(df_resultados)
