@@ -86,7 +86,7 @@ if uploaded_file:
                 # Calcular la diferencia
                 diferencia = hora_inicio_real - fecha_hora_entrada_planeada
                 # Añadir los resultados a la lista
-                if diferencia >= pd.Timedelta(0):
+                if diferencia > pd.Timedelta(0):
                     resultados.append([agente, fecha, diferencia])
             else:
                 # Si no hay hora de entrada planeada, añadir NaT
