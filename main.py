@@ -66,3 +66,42 @@ if uploaded_file:
 
     except Exception:
         pass
+
+    # Asegurarnos de que las columnas de fechas en df_first_online son de tipo datetime
+    df_first_online['Fecha'] = pd.to_datetime(df_first_online['Fecha'])
+    df_first_online['Hora de inicio del estado - Marca de tiempo'] = pd.to_datetime(df_first_online['Hora de inicio del estado - Marca de tiempo'], format='%H:%M:%S')
+    df_first_online['Inicio Completo'] = pd.to_datetime(df_first_online['Inicio Completo'])
+
+    # Convertir las entradas de entry_times a datetime
+    entry_times.columns = pd.to_datetime(entry_times.columns)
+
+    # Crear una lista para almacenar los resultados
+    resultados = []
+
+    # Iterar sobre cada fila de df_first_online
+    for index, row in df_first_online.iterrows():
+        agente = row['Nombre del agente']
+        fecha = row['Fecha']
+        hora_inicio_real = row['Inicio Completo']
+    
+        # Buscar la hora de entrada planeada en entry_times
+        try:
+            hora_entrada_planeada = entry_times.loc[agente, fecha]
+            if pd.notnull(hora_entrada_planeada):
+                hora_entrada_planeada = pd.Timestamp(hora_entrada_planeada)
+                fecha_hora_entrada_planeada = pd.Timestamp.combine(fecha.date(), hora_entrada_planeada.time())
+                # Calcular la diferencia
+                diferencia = hora_inicio_real - fecha_hora_entrada_planeada
+                # Añadir los resultados a la lista
+                resultados.append([agente, fecha, diferencia])
+            else:
+                # Si no hay hora de entrada planeada, añadir NaT
+                resultados.append([agente, fecha, pd.NaT])
+        except KeyError:
+            # Si la fecha no está en entry_times, añadir NaT
+            resultados.append([agente, fecha, pd.NaT])
+    
+    # Crear un DataFrame con los resultados
+    df_resultados = pd.DataFrame(resultados, columns=['Nombre del agente', 'Fecha', 'Diferencia'])
+
+    st.write(df_resultados)
