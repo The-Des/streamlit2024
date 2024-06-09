@@ -110,4 +110,7 @@ if uploaded_file:
     # Convertir la columna 'Diferencia' a una cadena en formato HH:MM:SS
     df_resultados['Diferencia'] = df_resultados['Diferencia'].apply(lambda x: str(x).split(' ')[-1])
 
+    # Formatear la columna de fecha para mostrar solo día/mes/año
+    df_resultados['Fecha'] = df_resultados['Fecha'].dt.strftime('%d/%m/%Y')
+    
     st.write(df_resultados)
