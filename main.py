@@ -38,10 +38,10 @@ if uploaded_file:
         df = df[~df['Nombre del agente'].isin(['Bryan Roman', 'Rafael Gonzalez'])]
 
         # Filtrar las filas donde el estado es "Online"
-        df_online = df[df['Estado'] == 'Online']
+        df_online = df[(df['Estado'] == 'Online') & (df['Canal'] == 'Messaging')]
 
         # Eliminar tildes en la columna 'Agente'
-        df['Nombre del agente'] = df['Nombre del agente'].apply(unidecode)
+        df_online['Nombre del agente'] = df['Nombre del agente'].apply(unidecode)
         
         # Convertir la columna de fecha a datetime
         df_online['Hora de inicio del estado - Fecha'] = pd.to_datetime(df_online['Hora de inicio del estado - Fecha'], format='%d %b %y')
