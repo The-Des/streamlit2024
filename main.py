@@ -101,16 +101,6 @@ if uploaded_file:
 
     # Convertir diferencia a segundos para análisis
     df_resultados['Diferencia_Segundos'] = pd.to_timedelta(df_resultados['Diferencia']).dt.total_seconds()
-
-    #Crear un filtro por agente y por fecha
-    selected_agentes = st.multiselect("Selecciona los agentes", options=agentes, default=agentes)
-    selected_fechas = st.multiselect("Selecciona las fechas", options=fechas, default=fechas)
-
-    # Filtrar datos según la selección del usuario
-    df_resultados_filtrados = df_resultados[
-        (df_resultados['Nombre del agente'].isin(selected_agentes)) &
-        (df_resultados['Fecha'].dt.date.isin(selected_fechas))
-    ]
     
     # Dividir en dos columnas
     col1, col2 = st.columns(2)
