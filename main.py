@@ -133,3 +133,19 @@ if uploaded_file:
     plt.ylabel('Tardanza en Segundos')
     st.pyplot(plt)
 
+    # Boxplot de tardanzas
+    st.write("Distribución de Tardanzas por Agente")
+    plt.figure(figsize=(10, 5))
+    sns.boxplot(data=df_resultados, x='Nombre del agente', y='Diferencia_Segundos')
+    plt.xlabel('Nombre del Agente')
+    plt.ylabel('Tardanza en Segundos')
+    st.pyplot(plt)
+
+    # Heatmap de tardanzas
+    st.write("Heatmap de Tardanzas")
+    heatmap_data = df_resultados.pivot_table(index='Nombre del agente', columns='Fecha', values='Diferencia_Segundos', fill_value=0)
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(heatmap_data, cmap='YlGnBu', linewidths=0.5)
+    plt.xlabel('Fecha')
+    plt.ylabel('Nombre del Agente')
+    st.pyplot(plt)
