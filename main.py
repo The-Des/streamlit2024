@@ -121,3 +121,13 @@ if uploaded_file:
     plt.xlabel('Total Tardanza en Segundos')
     plt.ylabel('Nombre del Agente')
     st.pyplot(plt)
+
+    # Línea de tiempo de tardanzas
+    st.write("Línea de Tiempo de Tardanzas")
+    df_resultados['Fecha'] = pd.to_datetime(df_resultados['Fecha'], format='%d/%m/%Y')
+    plt.figure(figsize=(10, 5))
+    sns.lineplot(data=df_resultados, x='Fecha', y='Diferencia_Segundos', hue='Nombre del agente')
+    plt.xlabel('Fecha')
+    plt.ylabel('Tardanza en Segundos')
+    st.pyplot(plt)
+
