@@ -105,16 +105,6 @@ if uploaded_file:
     # Convertir diferencia a segundos para análisis
     df_resultados['Diferencia_Segundos'] = pd.to_timedelta(df_resultados['Diferencia']).dt.total_seconds()
 
-    st.dataframe(df_resultados)
-    
-    # Histograma de tardanzas
-    st.write("Histograma de Tardanzas")
-    plt.figure(figsize=(10, 5))
-    sns.histplot(df_resultados['Diferencia_Segundos'], kde=True)
-    plt.xlabel('Tardanza en Segundos')
-    plt.ylabel('Frecuencia')
-    st.pyplot(plt)
-
     # Gráfico de barras de tardanzas por agente
     st.write("Tardanzas por Agente")
     tardanza_por_agente = df_resultados.groupby('Nombre del agente')['Diferencia_Segundos'].sum().sort_values()
