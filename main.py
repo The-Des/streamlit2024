@@ -114,7 +114,7 @@ if uploaded_file:
     with col2:
         st.write("Tardanzas por Agente")
         tardanza_por_agente = df_resultados.groupby('Nombre del agente')['Diferencia_Segundos'].sum().sort_values()
-        plt.figure(figsize=(12, 8))
+        plt.figure(figsize=(12, 15))
         tardanza_por_agente.plot(kind='barh')
         plt.xlabel('Total Tardanza en Segundos')
         plt.ylabel('Nombre del Agente')
