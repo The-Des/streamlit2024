@@ -102,7 +102,7 @@ if uploaded_file:
     # Convertir diferencia a segundos para análisis
     df_resultados['Diferencia_Segundos'] = pd.to_timedelta(df_resultados['Diferencia']).dt.total_seconds()
 
-    st.title('Reporte de tardanzas')
+    st.title('Reporte de tardanzas', divider='rainbow')
     
     # Dividir en dos columnas
     col1, col2 = st.columns(2)
