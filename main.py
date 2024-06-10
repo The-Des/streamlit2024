@@ -98,14 +98,20 @@ if uploaded_file:
 
     # Formatear la columna de fecha para mostrar solo día/mes/año
     df_resultados['Fecha'] = df_resultados['Fecha'].dt.strftime('%d/%m/%Y')
-    
-    st.write("Tabla de Tardanzas")
-    st.dataframe(df_resultados)
 
     # Convertir diferencia a segundos para análisis
     df_resultados['Diferencia_Segundos'] = pd.to_timedelta(df_resultados['Diferencia']).dt.total_seconds()
 
+    # Dividir en dos columnas
+    col1, col2 = st.columns(2)
+
+    # Tabla de resultados
+    with col1:
+    st.write("Tabla de Tardanzas")
+    st.dataframe(df_resultados)
+
     # Gráfico de barras de tardanzas por agente
+    with col2
     st.write("Tardanzas por Agente")
     tardanza_por_agente = df_resultados.groupby('Nombre del agente')['Diferencia_Segundos'].sum().sort_values()
     plt.figure(figsize=(10, 5))
@@ -114,7 +120,11 @@ if uploaded_file:
     plt.ylabel('Nombre del Agente')
     st.pyplot(plt)
 
+    # Dividir en dos columnas
+    col3, col4 = st.columns(2)
+    
     # Línea de tiempo de tardanzas
+    with col3
     st.write("Línea de Tiempo de Tardanzas")
     df_resultados['Fecha'] = pd.to_datetime(df_resultados['Fecha'], format='%d/%m/%Y')
     plt.figure(figsize=(10, 5))
@@ -124,6 +134,7 @@ if uploaded_file:
     st.pyplot(plt)
 
     # Heatmap de tardanzas
+    with col4
     st.write("Heatmap de Tardanzas")
     heatmap_data = df_resultados.pivot_table(index='Nombre del agente', columns='Fecha', values='Diferencia_Segundos', fill_value=0)
     plt.figure(figsize=(12, 8))
