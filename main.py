@@ -57,7 +57,6 @@ if uploaded_file:
         df_online['Fecha'] = df_online['Hora de inicio del estado - Fecha'].dt.date
         df_first_online = df_online.groupby(['Nombre del agente', 'Fecha']).first().reset_index()
 
-        st.write(df_first_online)
     except Exception:
         pass
 
