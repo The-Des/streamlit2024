@@ -104,6 +104,8 @@ if uploaded_file:
 
     # Convertir diferencia a segundos para análisis
     df_resultados['Diferencia_Segundos'] = pd.to_timedelta(df_resultados['Diferencia']).dt.total_seconds()
+
+    st.dataframe(df_resultados)
     
     # Histograma de tardanzas
     st.write("Histograma de Tardanzas")
