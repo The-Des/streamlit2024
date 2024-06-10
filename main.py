@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from unidecode import unidecode
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Cargar el archivo Excel
 uploaded_file = st.file_uploader("Sube el horario", type=["xlsx"])
