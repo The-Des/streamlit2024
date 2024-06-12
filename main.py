@@ -106,43 +106,26 @@ if uploaded_file:
     st.title('Reporte de tardanzas')
     st.write("##")
 
-    # Dividir en dos columnas
-    col1, col2 = st.columns(2)
-
-    # Tabla de resultados
-    with col1:
-        st.write("Tabla de Tardanzas")
-        st.dataframe(df_resultados)
+   # Tabla de resultados
+    st.write("Tabla de Tardanzas")
+    st.dataframe(df_resultados)
 
     # Gráfico de barras de tardanzas por agente
-    with col2:
-        st.write("Tardanzas por Agente")
-        tardanza_por_agente = df_resultados.groupby('Nombre del agente')['Diferencia_Segundos'].sum().sort_values()
-        plt.figure(figsize=(15, 15))
-        tardanza_por_agente.plot(kind='barh')
-        plt.xlabel('Total Tardanza en Segundos')
-        plt.ylabel('Nombre del Agente')
-        st.pyplot(plt)
-
-    # Dividir en dos columnas
-    col3, col4 = st.columns(2)
     
-    # Línea de tiempo de tardanzas
-    with col3:
-        st.write("Línea de Tiempo de Tardanzas")
-        df_resultados['Fecha'] = pd.to_datetime(df_resultados['Fecha'], format='%d/%m/%Y')
-        plt.figure(figsize=(15, 8))
-        sns.lineplot(data=df_resultados, x='Fecha', y='Diferencia_Segundos', hue='Nombre del agente')
-        plt.xlabel('Fecha')
-        plt.ylabel('Tardanza en Segundos')
-        st.pyplot(plt)
+    st.write("Tardanzas por Agente")
+    tardanza_por_agente = df_resultados.groupby('Nombre del agente')['Diferencia_Segundos'].sum().sort_values()
+    plt.figure(figsize=(15, 15))
+    tardanza_por_agente.plot(kind='barh')
+    plt.xlabel('Total Tardanza en Segundos')
+    plt.ylabel('Nombre del Agente')
+    st.pyplot(plt)
 
     # Heatmap de tardanzas
-    with col4:
-        st.write("Heatmap de Tardanzas")
-        heatmap_data = df_resultados.pivot_table(index='Nombre del agente', columns='Fecha', values='Diferencia_Segundos', fill_value=0)
-        plt.figure(figsize=(15, 8))
-        sns.heatmap(heatmap_data, cmap='YlGnBu', linewidths=0.5)
-        plt.xlabel('Fecha')
-        plt.ylabel('Nombre del Agente')
-        st.pyplot(plt)
+   
+    st.write("Heatmap de Tardanzas")
+    heatmap_data = df_resultados.pivot_table(index='Nombre del agente', columns='Fecha', values='Diferencia_Segundos', fill_value=0)
+    plt.figure(figsize=(15, 8))
+    sns.heatmap(heatmap_data, cmap='YlGnBu', linewidths=0.5)
+    plt.xlabel('Fecha')
+    plt.ylabel('Nombre del Agente')
+    st.pyplot(plt)
