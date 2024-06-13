@@ -102,14 +102,23 @@ if uploaded_file:
     # Convertir diferencia a segundos para análisis
     df_resultados['Diferencia_Segundos'] = pd.to_timedelta(df_resultados['Diferencia']).dt.total_seconds()
 
+    # Crear un DataFrame con la suma de tardanza por agente y por mes
+    df_resultados_filtrados['Mes'] = df_resultados_filtrados['Fecha'].dt.to_period('M')
+    df_totales = df_resultados_filtrados.groupby(['Nombre del agente', 'Mes'])['Diferencia_Segundos'].sum().reset_index()
+    df_totales['Diferencia'] = pd.to_timedelta(df_totales['Diferencia_Segundos'], unit='s')
+
     st.write("#")
     st.title('Reporte de tardanzas')
     st.write("##")
 
-   # Tabla de resultados
+    #Tabla de resultados por día
     st.write("Tabla de Tardanzas")
     st.dataframe(df_resultados)
 
+    #Tabla de resultados por mes
+    st.write("Tabla de Tardanzas por Mes")
+    st.dataframe(df_totales)
+    
     # Gráfico de barras de tardanzas por agente
     
     st.write("Tardanzas por Agente")
