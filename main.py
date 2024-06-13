@@ -102,6 +102,9 @@ if uploaded_file:
     # Convertir diferencia a segundos para análisis
     df_resultados['Diferencia_Segundos'] = pd.to_timedelta(df_resultados['Diferencia']).dt.total_seconds()
 
+    # Asegurar que todas las fechas sean del tipo datetime
+    df_resultados['Fecha'] = pd.to_datetime(df_resultados['Fecha'], errors='coerce')
+
     # Crear un DataFrame con la suma de tardanza por agente y por mes
     df_resultados['Mes'] = df_resultados['Fecha'].dt.to_period('M')
     df_totales = df_resultados.groupby(['Nombre del agente', 'Mes'])['Diferencia_Segundos'].sum().reset_index()
