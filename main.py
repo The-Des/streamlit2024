@@ -107,6 +107,9 @@ if uploaded_file:
     df_totales = df_resultados.groupby(['Nombre del agente', 'Mes'])['Diferencia_Segundos'].sum().reset_index()
     df_totales['Diferencia'] = pd.to_timedelta(df_totales['Diferencia_Segundos'], unit='s')
 
+    # Convertir 'Diferencia' al formato horas:minutos:segundos
+    df_totales['Diferencia'] = df_totales['Diferencia'].apply(lambda x: str(x).split(' ')[-1])
+    
     st.write("#")
     st.title('Reporte de tardanzas')
     st.write("##")
