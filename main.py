@@ -96,14 +96,11 @@ if uploaded_file:
     # Convertir la columna 'Diferencia' a una cadena en formato HH:MM:SS
     df_resultados['Diferencia'] = df_resultados['Diferencia'].apply(lambda x: str(x).split(' ')[-1])
 
-    # Formatear la columna de fecha para mostrar solo día/mes/año
-    df_resultados['Fecha'] = df_resultados['Fecha'].dt.strftime('%d/%m/%Y')
-
+    # Convertir la columna 'Fecha' a datetime asegurando el formato día/mes/año
+    df_resultados['Fecha'] = pd.to_datetime(df_resultados['Fecha'], format='%d/%m/%Y', errors='coerce')
+    
     # Convertir diferencia a segundos para análisis
     df_resultados['Diferencia_Segundos'] = pd.to_timedelta(df_resultados['Diferencia']).dt.total_seconds()
-
-    # Asegurar que todas las fechas sean del tipo datetime
-    df_resultados['Fecha'] = pd.to_datetime(df_resultados['Fecha'], errors='coerce')
 
     # Crear un DataFrame con la suma de tardanza por agente y por mes
     df_resultados['Mes'] = df_resultados['Fecha'].dt.to_period('M')
