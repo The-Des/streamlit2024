@@ -126,19 +126,13 @@ if uploaded_file:
     
 
     # Gráfico de barras de tardanzas por agente
-    fig, ax = plt.subplots(figsize=(10, 8))
-    df_total_agente = df_totales.groupby('Nombre del agente')['Diferencia_Segundos'].sum().sort_values()
-    ax.barh(df_total_agente.index, df_total_agente.values)
-    ax.set_xlabel('Total Tardanza en Segundos')
-    ax.set_ylabel('Nombre del Agente')
-    ax.set_title('Tardanzas por Agente')
-
-    # Añadir anotaciones
-    for i in ax.patches:
-        plt.text(i.get_width() + 200, i.get_y() + i.get_height()/2 - 0.2,
-                 f'{i.get_width():,}', ha='center', va='center')
-
-    st.pyplot(fig)
+    st.write("Tardanzas por Agente")
+    tardanza_por_agente = df_resultados.groupby('Nombre del agente')['Diferencia_Segundos'].sum().sort_values()
+    plt.figure(figsize=(10, 5))
+    tardanza_por_agente.plot(kind='barh')
+    plt.xlabel('Total Tardanza en Segundos')
+    plt.ylabel('Nombre del Agente')
+    st.pyplot(plt)
 
 
     # Heatmap de tardanzas
