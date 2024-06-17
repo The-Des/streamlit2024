@@ -112,7 +112,7 @@ if uploaded_file:
 
     agent_sidebar_selectbox= st.sidebar.selectbox(
     "Agente",
-    (df.['Agente'])
+    (df['Agente'])
     )
     
     st.write("#")
