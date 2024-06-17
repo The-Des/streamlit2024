@@ -109,6 +109,11 @@ if uploaded_file:
 
     # Convertir 'Diferencia' al formato horas:minutos:segundos
     df_totales['Diferencia'] = df_totales['Diferencia'].apply(lambda x: str(x).split(' ')[-1])
+
+    agent_sidebar_selectbox= st.sidebar.selectbox(
+    "Agente",
+    (df.['Agente'])
+    )
     
     st.write("#")
     st.title('Reporte de tardanzas')
