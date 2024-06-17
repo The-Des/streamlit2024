@@ -114,26 +114,34 @@ if uploaded_file:
     st.title('Reporte de tardanzas')
     st.write("##")
 
+
     #Tabla de resultados por día
     st.write("Tabla de Tardanzas")
     st.dataframe(df_resultados)
+
 
     #Tabla de resultados por mes
     st.write("Tabla de Tardanzas por Mes")
     st.dataframe(df_totales)
     
+
     # Gráfico de barras de tardanzas por agente
-    
-    st.write("Tardanzas por Agente")
-    tardanza_por_agente = df_resultados.groupby('Nombre del agente')['Diferencia_Segundos'].sum().sort_values()
-    plt.figure(figsize=(15, 15))
-    tardanza_por_agente.plot(kind='barh')
-    plt.xlabel('Total Tardanza en Segundos')
-    plt.ylabel('Nombre del Agente')
-    st.pyplot(plt)
+    fig, ax = plt.subplots(figsize=(10, 8))
+    df_total_agente = df_totales.groupby('Nombre del agente')['Diferencia_Segundos'].sum().sort_values()
+    ax.barh(df_total_agente.index, df_total_agente.values)
+    ax.set_xlabel('Total Tardanza en Segundos')
+    ax.set_ylabel('Nombre del Agente')
+    ax.set_title('Tardanzas por Agente')
+
+    # Añadir anotaciones
+    for i in ax.patches:
+        plt.text(i.get_width() + 200, i.get_y() + i.get_height()/2 - 0.2,
+                 f'{i.get_width():,}', ha='center', va='center')
+
+    st.pyplot(fig)
+
 
     # Heatmap de tardanzas
-   
     st.write("Heatmap de Tardanzas")
     heatmap_data = df_resultados.pivot_table(index='Nombre del agente', columns='Fecha', values='Diferencia_Segundos', fill_value=0)
     plt.figure(figsize=(15, 8))
