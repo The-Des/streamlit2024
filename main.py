@@ -112,7 +112,7 @@ if uploaded_file:
 
     agent_sidebar_selectbox= st.sidebar.selectbox(
     "Agente",
-    (df_totales.groupby('Nombre del agente'))
+    (df_totales.groupby('Nombre del agente').index)
     )
     
     st.write("#")
