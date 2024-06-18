@@ -55,9 +55,8 @@ if uploaded_file:
         # Agrupar por agente y fecha, y obtener el primer registro de cada día
         df_first_online = df_online.groupby(['Nombre del agente', 'Fecha']).first().reset_index()
 
-    except Exception as e:
-        st.error(f"Error: {e}")
-        df_first_online = pd.DataFrame()
+    except:
+        pass
 
     # Asegurarnos de que las columnas de fechas en df_first_online son de tipo datetime
     df_first_online['Fecha'] = pd.to_datetime(df_first_online['Fecha'])
