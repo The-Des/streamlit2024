@@ -139,10 +139,13 @@ if uploaded_file:
     ax.set_title('Tardanzas por Agente')
 
     # Añadir anotaciones
-    for i in ax.patches:
-        plt.text(i.get_width() + 200, i.get_y() + i.get_height()/2 - 0.2,
-                 f'{i.get_width():,}', ha='center', va='center')
-
+    for bar in bars:
+        width = bar.get_width()
+        label_x_pos = width - (width * 0.05)  # Posiciona el texto al final de la barra
+        ax.text(label_x_pos, bar.get_y() + bar.get_height()/2,
+                f'{width/3600:.2f}h',  # Convierte los segundos a horas y formatea con dos decimales
+                va='center', ha='right' if width > 0 else 'left', color='white', fontsize=10)
+    
     st.pyplot(fig)
 
 
