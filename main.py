@@ -133,7 +133,7 @@ if uploaded_file:
     # Gráfico de barras de tardanzas por agente
     fig, ax = plt.subplots(figsize=(10, 8))
     df_total_agente = df_totales.groupby('Nombre del agente')['Diferencia_Segundos'].sum().sort_values()
-    ax.barh(df_total_agente.index, df_total_agente.values)
+    bars = ax.barh(df_total_agente.index, df_total_agente.values)
     ax.set_xlabel('Total Tardanza en Segundos')
     ax.set_ylabel('Nombre del Agente')
     ax.set_title('Tardanzas por Agente')
