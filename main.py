@@ -56,7 +56,8 @@ if uploaded_file:
         df_first_online = df_online.groupby(['Nombre del agente', 'Fecha']).first().reset_index()
 
     except Exception as e:
-        pass
+        st.error(f"Error: {e}")
+        df_first_online = pd.DataFrame()
 
     # Asegurarnos de que las columnas de fechas en df_first_online son de tipo datetime
     df_first_online['Fecha'] = pd.to_datetime(df_first_online['Fecha'])
@@ -117,30 +118,30 @@ if uploaded_file:
 
     #filtrar el DataFrame según el agente seleccionado
     if agent_sidebar_selectbox != "Todos":
+        df_resultados_filtrados = df_resultados[df_resultados['Nombre del agente'] == agent_sidebar_selectbox]
         df_totales_filtrado = df_totales[df_totales['Nombre del agente'] == agent_sidebar_selectbox]
     else:
+        df_resultados_filtrados = df_resultados
         df_totales_filtrado = df_totales
     
     st.write("#")
     st.title('Reporte de tardanzas')
     st.write("##")
 
-    # Filtrar el DataFrame según el agente seleccionado
-    df_totales_filtrado = df_totales[df_totales['Nombre del agente'] == agent_sidebar_selectbox]
 
     #Tabla de resultados por día
     st.write("Tabla de Tardanzas")
-    st.dataframe(df_resultados)
+    st.dataframe(df_resultados_filtrados)
 
 
     #Tabla de resultados por mes
     st.write("Tabla de Tardanzas por Mes")
-    st.dataframe(df_totales)
+    st.dataframe(df_totales_filtrado)
     
 
     # Gráfico de barras de tardanzas por agente
     fig, ax = plt.subplots(figsize=(10, 8))
-    df_total_agente = df_totales.groupby('Nombre del agente')['Diferencia_Segundos'].sum().sort_values()
+    df_total_agente = df_totales_filtrado.groupby('Nombre del agente')['Diferencia_Segundos'].sum().sort_values()
     bars = ax.barh(df_total_agente.index, df_total_agente.values)
     ax.set_xlabel('Total Tardanza en Segundos')
     ax.set_ylabel('Nombre del Agente')
@@ -159,7 +160,7 @@ if uploaded_file:
 
     # Heatmap de tardanzas
     st.write("Heatmap de Tardanzas")
-    heatmap_data = df_resultados.pivot_table(index='Nombre del agente', columns='Fecha', values='Diferencia_Segundos', fill_value=0)
+    heatmap_data = df_totales_filtrado.pivot_table(index='Nombre del agente', columns='Fecha', values='Diferencia_Segundos', fill_value=0)
     plt.figure(figsize=(15, 8))
     sns.heatmap(heatmap_data, cmap='YlGnBu', linewidths=0.5)
     plt.xlabel('Fecha')
