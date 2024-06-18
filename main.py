@@ -112,7 +112,7 @@ if uploaded_file:
 
     agent_sidebar_selectbox= st.sidebar.selectbox(
     "Agente",
-    (df_totales['Nombre del agente'].values.unique)
+    (np.df_totales['Nombre del agente'].unique)
     )
     
     st.write("#")
