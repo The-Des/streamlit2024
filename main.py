@@ -114,6 +114,12 @@ if uploaded_file:
     "Agente",
     ['Todos'] + list(df_totales['Nombre del agente'].unique())
     )
+
+    #filtrar el DataFrame según el agente seleccionado
+    if agent_sidebar_selectbox != "Todos":
+        df_totales_filtrado = df_totales[df_totales['Nombre del agente'] == agent_sidebar_selectbox]
+    else:
+        df_totales_filtrado = df_totales
     
     st.write("#")
     st.title('Reporte de tardanzas')
