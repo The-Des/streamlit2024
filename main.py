@@ -112,13 +112,15 @@ if uploaded_file:
 
     agent_sidebar_selectbox= st.sidebar.selectbox(
     "Agente",
-    df_totales['Nombre del agente'].unique()
+    ['Todos'] + list(df_totales['Nombre del agente'].unique())
     )
     
     st.write("#")
     st.title('Reporte de tardanzas')
     st.write("##")
 
+    # Filtrar el DataFrame según el agente seleccionado
+    df_totales_filtrado = df_totales[df_totales['Nombre del agente'] == agent_sidebar_selectbox]
 
     #Tabla de resultados por día
     st.write("Tabla de Tardanzas")
