@@ -172,7 +172,7 @@ if uploaded_file:
 
     # Heatmap de tardanzas
     st.subheader("**Heatmap de Tardanzas**")
-    heatmap_data = df_totales_filtrado.pivot_table(index='Nombre del agente', columns='Fecha', values='Diferencia_Segundos', fill_value=0)
+    heatmap_data = df_resultados_filtrados.pivot_table(index='Nombre del agente', columns='Fecha', values='Diferencia_Segundos', fill_value=0)
     plt.figure(figsize=(15, 8))
     sns.heatmap(heatmap_data, cmap='YlGnBu', linewidths=0.5)
     plt.xlabel('Fecha')
