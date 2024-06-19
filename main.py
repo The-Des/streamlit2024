@@ -186,7 +186,7 @@ if uploaded_file:
     st.write("##")
 
     # Crear un nuevo DataFrame para el gráfico
-    df_bar_chart = df_totales_filtrado[['Nombre del agente', 'Diferencia_Segundos']].copy()
+    df_bar_chart = df_totales_filtrado[['Nombre del agente', 'Porcentaje']].copy()
     
     # Configurar el índice para que sea el nombre del agente
     df_bar_chart.set_index('Nombre del agente', inplace=True)
