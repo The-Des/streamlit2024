@@ -147,7 +147,7 @@ if uploaded_file:
     #Tabla de resultados por mes
     st.subheader("**Tabla de Tardanzas por Mes**")
     st.dataframe(df_totales_filtrado)
-    st.write("#")
+    st.write("##")
 
     # Gráfico de barras de tardanzas por agente
     st.subheader("**Tardanzas por Agente**")
@@ -168,7 +168,7 @@ if uploaded_file:
                 va='center', ha='right' if width > 0 else 'left', color='white', fontsize=10)
     
     st.pyplot(fig)
-    st.write("#")
+    st.write("##")
 
     # Heatmap de tardanzas
     st.subheader("**Heatmap de Tardanzas**")
