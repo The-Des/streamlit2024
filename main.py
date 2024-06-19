@@ -102,6 +102,12 @@ if uploaded_file:
     # Convertir diferencia a segundos para análisis
     df_resultados['Diferencia_Segundos'] = pd.to_timedelta(df_resultados['Diferencia']).dt.total_seconds()
 
+    # Calcular el total de segundos de tardanza
+    total_seconds = df_resultados['Diferencia_Segundos'].sum()
+
+    # Calcular el porcentaje de cada fila
+    df_resultados['Porcentaje'] = (df_resultados['Diferencia_Segundos'] / total_seconds) * 100
+    
     # Crear un DataFrame con la suma de tardanza por agente y por mes
     df_resultados['Mes'] = df_resultados['Fecha'].dt.to_period('M')
     df_totales = df_resultados.groupby(['Nombre del agente', 'Mes'])['Diferencia_Segundos'].sum().reset_index()
@@ -110,6 +116,13 @@ if uploaded_file:
     # Convertir 'Diferencia' al formato horas:minutos:segundos
     df_totales['Diferencia'] = df_totales['Diferencia'].apply(lambda x: str(x).split(' ')[-1])
 
+    # Calcular el total de segundos de tardanza por mes
+    total_seconds_mes = df_totales['Diferencia_Segundos'].sum()
+
+    # Calcular el porcentaje de cada fila
+    df_totales['Porcentaje'] = (df_totales['Diferencia_Segundos'] / total_seconds_mes) * 100
+
+    #Agregar barra lateral con filtros por agentes y mes
     agent_sidebar_selectbox= st.sidebar.selectbox(
     "Agente",
     ['Todos'] + list(df_totales['Nombre del agente'].unique())
@@ -141,12 +154,12 @@ if uploaded_file:
     
     #Tabla de resultados por día
     st.subheader("**Tabla de Tardanzas**")
-    st.dataframe(df_resultados_filtrados)
+    st.dataframe(df_resultados_filtrados[['Nombre del agente','Fecha','Diferencia','Porcentaje']])
     st.write("##")
 
     #Tabla de resultados por mes
     st.subheader("**Tabla de Tardanzas por Mes**")
-    st.dataframe(df_totales_filtrado)
+    st.dataframe(df_totales_filtrado[['Nombre del agente', 'Mes', 'Diferencia', 'Porcentaje']])
     st.write("##")
 
     # Gráfico de barras de tardanzas por agente
