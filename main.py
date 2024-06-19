@@ -115,7 +115,7 @@ if uploaded_file:
     ['Todos'] + list(df_totales['Nombre del agente'].unique())
     )
     month_sidebar_selectbox = st.sidebar.selectbox(
-        "Mes",
+        "Año y mes",
         ["Todos"] + list(df_totales['Mes'].astype(str).unique())
     )
 
