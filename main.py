@@ -140,7 +140,7 @@ if uploaded_file:
     
     
     #Tabla de resultados por día
-    st.write("**Tabla de Tardanzas**")
+    st.subheader("**Tabla de Tardanzas**")
     st.dataframe(df_resultados_filtrados)
     st.write("#")
 
