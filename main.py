@@ -106,7 +106,7 @@ if uploaded_file:
     total_seconds = df_resultados['Diferencia_Segundos'].sum()
 
     # Calcular el porcentaje de cada fila
-    df_resultados['Porcentaje'] = (df_resultados['Diferencia_Segundos'] / total_seconds) * 100
+    df_resultados['Porcentaje'] = ((df_resultados['Diferencia_Segundos'] / total_seconds) * 100).round(2)
     
     # Crear un DataFrame con la suma de tardanza por agente y por mes
     df_resultados['Mes'] = df_resultados['Fecha'].dt.to_period('M')
@@ -120,7 +120,7 @@ if uploaded_file:
     total_seconds_mes = df_totales['Diferencia_Segundos'].sum()
 
     # Calcular el porcentaje de cada fila
-    df_totales['Porcentaje'] = (df_totales['Diferencia_Segundos'] / total_seconds_mes) * 100
+    df_totales['Porcentaje'] = ((df_totales['Diferencia_Segundos'] / total_seconds_mes) * 100).round(2)
 
     #Agregar barra lateral con filtros por agentes y mes
     agent_sidebar_selectbox= st.sidebar.selectbox(
