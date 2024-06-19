@@ -164,7 +164,7 @@ if uploaded_file:
     st.dataframe(df_totales_filtrado[['Nombre del agente', 'Mes', 'Diferencia', 'Porcentaje']])
     st.write("##")
 
-    # Gráfico de barras de tardanzas por agente
+    '''# Gráfico de barras de tardanzas por agente
     st.subheader("**Tardanzas por Agente**")
     fig, ax = plt.subplots(figsize=(10, 8))
     df_total_agente = df_totales_filtrado.groupby('Nombre del agente')['Diferencia_Segundos'].sum().sort_values()
@@ -183,7 +183,7 @@ if uploaded_file:
                 va='center', ha='right' if width > 0 else 'left', color='white', fontsize=10)
     
     st.pyplot(fig)
-    st.write("##")
+    st.write("##")'''
 
     if month_sidebar_selectbox == "Todos":
         # Agrupar por agente para obtener el porcentaje total
