@@ -177,7 +177,7 @@ if uploaded_file:
     # Añadir anotaciones
     for bar in bars:
         width = bar.get_width()
-        label_x_pos = width - (width * 0.05)  # Posiciona el texto al final de la barra
+        label_x_pos = width - (width * 0.1)  # Posiciona el texto al final de la barra
         ax.text(label_x_pos, bar.get_y() + bar.get_height()/2,
                 f'{width/3600:.2f}h',  # Convierte los segundos a horas y formatea con dos decimales
                 va='center', ha='right' if width > 0 else 'left', color='white', fontsize=10)
