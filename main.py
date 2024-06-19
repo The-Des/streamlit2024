@@ -164,26 +164,26 @@ if uploaded_file:
     st.dataframe(df_totales_filtrado[['Nombre del agente', 'Mes', 'Diferencia', 'Porcentaje']])
     st.write("##")
 
-    '''# Gráfico de barras de tardanzas por agente
-    st.subheader("**Tardanzas por Agente**")
-    fig, ax = plt.subplots(figsize=(10, 8))
-    df_total_agente = df_totales_filtrado.groupby('Nombre del agente')['Diferencia_Segundos'].sum().sort_values()
-    bars = ax.barh(df_total_agente.index, df_total_agente.values)
-    ax.set_xlabel('Total Tardanza en Segundos')
-    ax.set_ylabel('Nombre del Agente')
-    ax.set_title('Tardanzas por Agente')
+    # Gráfico de barras de tardanzas por agente
+    #st.subheader("**Tardanzas por Agente**")
+    #fig, ax = plt.subplots(figsize=(10, 8))
+    #df_total_agente = df_totales_filtrado.groupby('Nombre del agente')['Diferencia_Segundos'].sum().sort_values()
+    #bars = ax.barh(df_total_agente.index, df_total_agente.values)
+    #ax.set_xlabel('Total Tardanza en Segundos')
+    #ax.set_ylabel('Nombre del Agente')
+    #ax.set_title('Tardanzas por Agente')
     
     
     # Añadir anotaciones
-    for bar in bars:
-        width = bar.get_width()
-        label_x_pos = width - (width * 0.05)  # Posiciona el texto al final de la barra
-        ax.text(label_x_pos, bar.get_y() + bar.get_height()/2,
-                f'{width/3600:.2f}h',  # Convierte los segundos a horas y formatea con dos decimales
-                va='center', ha='right' if width > 0 else 'left', color='white', fontsize=10)
+    #for bar in bars:
+    #    width = bar.get_width()
+    #    label_x_pos = width - (width * 0.05)  # Posiciona el texto al final de la barra
+    #    ax.text(label_x_pos, bar.get_y() + bar.get_height()/2,
+    #            f'{width/3600:.2f}h',  # Convierte los segundos a horas y formatea con dos decimales
+    #            va='center', ha='right' if width > 0 else 'left', color='white', fontsize=10)
     
-    st.pyplot(fig)
-    st.write("##")'''
+    #st.pyplot(fig)
+    #st.write("##")
 
     if month_sidebar_selectbox == "Todos":
         # Agrupar por agente para obtener el porcentaje total
