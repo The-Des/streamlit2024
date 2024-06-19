@@ -146,8 +146,9 @@ if uploaded_file:
     #Tabla de resultados por mes
     st.write("Tabla de Tardanzas por Mes")
     st.dataframe(df_totales_filtrado)
-    
 
+    st.table(df_totales_filtrado)
+    
     # Gráfico de barras de tardanzas por agente
     fig, ax = plt.subplots(figsize=(10, 8))
     df_total_agente = df_totales_filtrado.groupby('Nombre del agente')['Diferencia_Segundos'].sum().sort_values()
