@@ -114,14 +114,24 @@ if uploaded_file:
     "Agente",
     ['Todos'] + list(df_totales['Nombre del agente'].unique())
     )
+    month_sidebar_selectbox = st.sidebar.selectbox(
+        "Mes",
+        ["Todos"] + list(df_totales['Mes'].astype(str).unique())
+    )
 
+    # Filtrar el DataFrame según el agente y mes seleccionados
+    df_resultados_filtrados = df_resultados.copy()
+    df_totales_filtrado = df_totales.copy()
+    
     #filtrar el DataFrame según el agente seleccionado
     if agent_sidebar_selectbox != "Todos":
         df_resultados_filtrados = df_resultados[df_resultados['Nombre del agente'] == agent_sidebar_selectbox]
         df_totales_filtrado = df_totales[df_totales['Nombre del agente'] == agent_sidebar_selectbox]
-    else:
-        df_resultados_filtrados = df_resultados
-        df_totales_filtrado = df_totales
+        
+    if month_sidebar_selectbox != "Todos":
+        df_resultados_filtrados = df_resultados_filtrados[df_resultados_filtrados['Mes'].astype(str) == month_sidebar_selectbox]
+        df_totales_filtrado = df_totales_filtrado[df_totales_filtrado['Mes'].astype(str) == month_sidebar_selectbox]
+
     
     st.write("#")
     st.title('Reporte de tardanzas')
