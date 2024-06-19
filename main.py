@@ -145,6 +145,8 @@ if uploaded_file:
         df_resultados_filtrados = df_resultados_filtrados[df_resultados_filtrados['Mes'].astype(str) == month_sidebar_selectbox]
         df_totales_filtrado = df_totales_filtrado[df_totales_filtrado['Mes'].astype(str) == month_sidebar_selectbox]
 
+    #Convertir la columna 'Fecha' a solo fecha (sin tiempo)
+    df_resultados_filtrados['Fecha'] = df_resultados_filtrados['Fecha'].dt.date
     
     st.write("#")
     st.title('Reporte de tardanzas')
