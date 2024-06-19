@@ -142,12 +142,12 @@ if uploaded_file:
     #Tabla de resultados por día
     st.write("Tabla de Tardanzas")
     st.dataframe(df_resultados_filtrados)
-
+    st.write("#")
 
     #Tabla de resultados por mes
     st.write("Tabla de Tardanzas por Mes")
     st.dataframe(df_totales_filtrado)
-
+    st.write("#")
 
     # Gráfico de barras de tardanzas por agente
     fig, ax = plt.subplots(figsize=(10, 8))
@@ -156,7 +156,8 @@ if uploaded_file:
     ax.set_xlabel('Total Tardanza en Segundos')
     ax.set_ylabel('Nombre del Agente')
     ax.set_title('Tardanzas por Agente')
-
+    
+    
     # Añadir anotaciones
     for bar in bars:
         width = bar.get_width()
@@ -166,7 +167,7 @@ if uploaded_file:
                 va='center', ha='right' if width > 0 else 'left', color='white', fontsize=10)
     
     st.pyplot(fig)
-
+    st.write("#")
 
     # Heatmap de tardanzas
     st.write("Heatmap de Tardanzas")
