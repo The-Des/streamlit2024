@@ -127,7 +127,11 @@ if uploaded_file:
     if agent_sidebar_selectbox != "Todos":
         df_resultados_filtrados = df_resultados[df_resultados['Nombre del agente'] == agent_sidebar_selectbox]
         df_totales_filtrado = df_totales[df_totales['Nombre del agente'] == agent_sidebar_selectbox]
-        
+        with st.sidebar:
+            with st.spinner("Loading..."):
+            time.sleep(5)
+        st.success("Done!")
+    
     if month_sidebar_selectbox != "Todos":
         df_resultados_filtrados = df_resultados_filtrados[df_resultados_filtrados['Mes'].astype(str) == month_sidebar_selectbox]
         df_totales_filtrado = df_totales_filtrado[df_totales_filtrado['Mes'].astype(str) == month_sidebar_selectbox]
