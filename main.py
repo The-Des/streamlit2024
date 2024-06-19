@@ -136,7 +136,7 @@ if uploaded_file:
     st.write("#")
     st.title('Reporte de tardanzas')
     st.write("##")
-
+    st.divider()
 
     #Tabla de resultados por día
     st.write("Tabla de Tardanzas")
