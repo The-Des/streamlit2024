@@ -22,7 +22,7 @@ if uploaded_file:
         return pd.to_datetime(schedule.split(' - ')[0], format='%H:%M')
     
     # Aplicar la función a todas las columnas excepto la columna 'Agente'
-    entry_times = df.set_index('Agente').applymap(extract_entry_time)
+    entry_times = df.set_index('Agente').apply(lambda col: col.map(extract_entry_time))
 
     # Guardar el resultado en memoria
     st.session_state['entry_times'] = entry_times
