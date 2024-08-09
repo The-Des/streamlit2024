@@ -17,7 +17,7 @@ if uploaded_file:
     
     # Función para extraer la hora de entrada
     def extract_entry_time(schedule):
-        if schedule in ["OFF", "VAC"]:
+        if schedule in ["OFF", "VAC", "DM"]:
             return np.nan
         return pd.to_datetime(schedule.split(' - ')[0], format='%H:%M')
     
